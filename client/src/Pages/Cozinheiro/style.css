@@ -1,0 +1,218 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/*  PAGE  */
+.cook-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 8px solid #0b5ea8;
+}
+
+/*  HEADER  */
+.cook-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: #ffffff;
+    color: #0b5ea8;
+    font-weight: bold;
+    border-bottom: 2px solid #0b5ea8;
+}
+
+.cook-header h1 {
+    font-size: 22px;
+}
+
+.cook-header h2 {
+    font-size: 18px;
+}
+
+/* linha separadora estilo protótipo */
+.cook-page hr {
+    border: none;
+    height: 3px;
+    background: #0b5ea8;
+}
+
+/*  MAIN LAYOUT  */
+.cook-main {
+    display: flex;
+    flex: 1;
+    justify-content: space-between;
+    padding: 20px;
+    gap: 20px;
+}
+
+/*  LEFT PANEL  */
+.left-panel {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.panel-title {
+    color: #0b5ea8;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* CARD DE REFEIÇÃO */
+.meal-card {
+    background: #0b5ea8;
+    color: white;
+    padding: 15px;
+    border: 3px solid #2f8be6;
+    min-height: 90px;
+}
+
+.meal-card h3 {
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+
+.meal-card p {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* CARD VAZIO */
+.empty-card {
+    background: #f0f0f0;
+    color: #333;
+    border: 2px dashed #999;
+}
+
+/*  RIGHT PANEL  */
+.right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* BOTÃO PRINCIPAL */
+.ingredientes-button {
+    background: #ffffff;
+    border: 2px solid #0b5ea8;
+    color: #0b5ea8;
+    font-weight: bold;
+    padding: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.ingredientes-button:hover {
+    background: #0b5ea8;
+    color: white;
+}
+
+/* BOX INGREDIENTES */
+.ingredientes-box {
+    background: #f5f5f5;
+    border: 2px solid #0b5ea8;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.prato-box {
+    margin-bottom: 10px;
+}
+
+.prato-box h3 {
+    color: #0b5ea8;
+    font-size: 14px;
+}
+
+.prato-box ul {
+    margin-left: 18px;
+    font-size: 13px;
+}
+
+/*  FORM  */
+.form-section {
+    margin-top: 10px;
+}
+
+.form-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #ffffff;
+    border: 2px solid #0b5ea8;
+    padding: 10px;
+}
+
+.form-box label {
+    font-size: 12px;
+    font-weight: bold;
+    color: #0b5ea8;
+}
+
+.form-box input {
+    padding: 6px;
+    border: 1px solid #0b5ea8;
+    outline: none;
+}
+
+.save-button {
+    margin-top: 10px;
+    background: #0b5ea8;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.save-button:hover {
+    background: #084a86;
+}
+
+/*  HISTÓRICO  */
+.historico-section {
+    padding: 20px;
+}
+
+.historico-section h2 {
+    color: #0b5ea8;
+    margin-bottom: 10px;
+}
+
+.historico-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.historico-table th {
+    background: #0b5ea8;
+    color: white;
+    padding: 8px;
+}
+
+.historico-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.empty-history {
+    color: #777;
+}
+
+/*  FOOTER  */
+.cook-footer {
+    text-align: center;
+    padding: 15px;
+    color: #999;
+    font-size: 12px;
+    border-top: 2px solid #0b5ea8;
+}
