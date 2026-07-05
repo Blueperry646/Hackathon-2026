@@ -1,164 +1,209 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './style.css';
 import logo from '../../Images/logo-caragua.png';
 
-function Login() {
+/**
+ * Página de Login
+ * 
+ * Funcionalidades:
+ * - Autenticação de usuários com identificador e senha
+ * - Redirecionamento baseado no perfil (ADMIN, CONTADOR, COZINHEIRO)
+ * - Persistência de sessão no localStorage
+ * - Tratamento de erros com feedback ao usuário
+ */
 
+function Login() {
     // ===========================
-    // Estados do formulário
+    // ESTADOS DO COMPONENTE
     // ===========================
 
     const [identificador, setIdentificador] = useState('');
     const [senha, setSenha] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [erro, setErro] = useState('');
 
     // ===========================
-    // Navegação entre páginas
+    // NAVEGAÇÃO
     // ===========================
 
     const navigate = useNavigate();
 
     // ===========================
-    // Função de autenticação
+    // REDIRECIONAMENTO SE JÁ LOGADO
+    // ===========================
+
+    useEffect(() => {
+        const usuarioStr = localStorage.getItem('usuario');
+        
+        if (usuarioStr) {
+            try {
+                const usuario = JSON.parse(usuarioStr);
+                
+                if (usuario.perfil === 'ADMIN') {
+                    navigate('/admin-dashboard');
+                } else if (usuario.perfil === 'CONTADOR') {
+                    navigate('/contador');
+                } else if (usuario.perfil === 'COZINHEIRO') {
+                    navigate('/cozinheiro');
+                }
+            } catch (error) {
+                console.error('Erro ao verificar sessão:', error);
+                localStorage.removeItem('usuario');
+            }
+        }
+    }, [navigate]);
+
+    // ===========================
+    // FUNÇÃO DE AUTENTICAÇÃO
     // ===========================
 
     const handleLogin = async (e) => {
-
         e.preventDefault();
+        
+        setErro('');
 
-        /*
-            ======================================
-            REQUISIÇÃO DE LOGIN PARA O BACKEND
-            ======================================
+        if (!identificador.trim()) {
+            setErro('Por favor, digite seu identificador.');
+            return;
+        }
 
-            Envia email e senha para autenticação
-            no servidor via POST.
-        */
+        if (!senha.trim()) {
+            setErro('Por favor, digite sua senha.');
+            return;
+        }
+
+        setLoading(true);
 
         try {
-
-            const response = await axios.post('http://localhost:5000/login', {
-                identificador,  // ← mudou
-                senha           // ← mudou
-            });
-
-            /*
-                ======================================
-                RESPOSTA DO SERVIDOR
-                ======================================
-
-                Se login for bem-sucedido:
-                - salva usuário no localStorage
-                - redireciona conforme cargo
-            */
+            const response = await axios.post(
+                'http://localhost:5000/login',
+                { 
+                    identificador: identificador.trim(), 
+                    senha: senha.trim() 
+                }
+            );
 
             if (response.data.success) {
-
                 const user = response.data.user;
-                const cargo = user.cargo;
-
-                // Armazena dados do usuário localmente
+                
                 localStorage.setItem('usuario', JSON.stringify(user));
-
-                /*
-                    ======================================
-                    REDIRECIONAMENTO POR PERFIL
-                    ======================================
-
-                    ADMIN -> dashboard administrativo
-                    CONTADOR -> área financeira
-                    COZINHEIRO -> painel de produção
-                */
-
+                
+                const cargo = user.perfil;
+                
                 switch (cargo) {
-
                     case 'ADMIN':
                         navigate('/admin-dashboard');
                         break;
-
                     case 'CONTADOR':
                         navigate('/contador');
                         break;
-
                     case 'COZINHEIRO':
                         navigate('/cozinheiro');
                         break;
-
                     default:
+                        setErro('Perfil de usuário inválido.');
                         navigate('/');
                 }
             }
 
         } catch (err) {
+            console.error('Erro no login:', err);
 
-            /*
-                ======================================
-                TRATAMENTO DE ERRO
-                ======================================
+            if (err.response) {
+                const status = err.response.status;
+                const message = err.response.data?.message;
 
-                Exibe mensagem caso login falhe
-            */
-
-            alert("Erro ao logar: " + err.response.data.message);
+                if (status === 401) {
+                    setErro(message || 'Credenciais inválidas. Tente novamente.');
+                } else if (status === 500) {
+                    setErro('Erro no servidor. Tente novamente mais tarde.');
+                } else {
+                    setErro(message || 'Erro ao fazer login. Tente novamente.');
+                }
+            } else if (err.request) {
+                setErro('Não foi possível conectar ao servidor. Verifique se o backend está rodando.');
+            } else {
+                setErro('Ocorreu um erro inesperado. Tente novamente.');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Revisar
-    const user = response.data.user;
-    console.log(user.nome, user.perfil, user.escola);
+    // ===========================
+    // RENDERIZAÇÃO DA INTERFACE
+    // ===========================
 
     return (
-
-
         <div className="login-page">
+            
+            {/* ================= HEADER COM CREDENCIAIS ================= */}
+            <div className="login-header">
+                <span></span> {/* Espaçador para alinhar à direita */}
+                <div className="credenciais">
+                    <strong>Admin:</strong> admin123 <span>|</span> 
+                    <strong> Contador:</strong> contador123 <span>|</span> 
+                    <strong> Cozinheiro:</strong> cozinheiro123
+                </div>
+            </div>
 
             {/* ================= LOGO ================= */}
-
             <div className="logo-area">
-                <img src={logo} alt="Caraguatatuba" />
+                <img src={logo} alt="Logo Caraguatatuba" />
             </div>
 
             {/* ================= FORMULÁRIO DE LOGIN ================= */}
-
             <div className="login-box">
-
                 <h1>LOGIN</h1>
-
                 <div className="line"></div>
 
+                {erro && (
+                    <div className="erro">
+                        {erro}
+                    </div>
+                )}
+
                 <form onSubmit={handleLogin}>
+                    <div className="input-group">
+                        <label>Identificador</label>
+                        <input
+                            type="text"
+                            placeholder="Digite seu identificador"
+                            value={identificador}
+                            onChange={(e) => setIdentificador(e.target.value)}
+                            disabled={loading}
+                            autoFocus
+                            required
+                        />
+                    </div>
 
-                    {/* Campo de email do usuário */}
-                    <input
-                        type="email"
-                        placeholder="E-MAIL"
-                        onChange={(e) => setEmail(e.target.value)}
-                    />
+                    <div className="input-group">
+                        <label>Senha</label>
+                        <input
+                            type="password"
+                            placeholder="Digite sua senha"
+                            value={senha}
+                            onChange={(e) => setSenha(e.target.value)}
+                            disabled={loading}
+                            required
+                        />
+                    </div>
 
-                    {/* Campo de senha do usuário */}
-                    <input
-                        type="password"
-                        placeholder="SENHA"
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-
-                    {/* Botão de envio do formulário */}
-                    <button type="submit">
-                        ENVIAR
+                    <button 
+                        type="submit" 
+                        disabled={loading}
+                    >
+                        {loading ? 'ENTRANDO...' : 'ENVIAR'}
                     </button>
-
                 </form>
-
             </div>
 
-            <div className="encherLinguica"></div>
-
             {/* ================= FOOTER ================= */}
-
-            <p className="footer">
-                Protótipo da página de login feito pela equipe Try Catcher - Hackathon 2026
-            </p>
+            <div className="login-footer">
+                Protótipo da página de login desenvolvido pela equipe <span>Try Catcher</span> - Hackathon 2026
+            </div>
 
         </div>
     );
