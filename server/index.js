@@ -60,7 +60,7 @@ app.get('/admin/cardapio', async (req, res) => {
 
   try {
     const where = {};
-    
+
     if (turmaId) where.turmaId = parseInt(turmaId);
     if (data) {
       const dataFilter = new Date(data);
@@ -122,6 +122,284 @@ app.post('/admin/cardapio', async (req, res) => {
     res.status(400).json({ error: "Erro ao criar cardápio" });
   }
 });
+
+// ATUALIZAR cardápio (NOVO)
+app.put('/admin/cardapio/:id', async (req, res) => {
+  const { id } = req.params;
+  const { dataRefeicao, horario, turmaId, pratoId, restricaoId } = req.body;
+
+  try {
+    const cardapio = await prisma.cardapioSemanal.update({
+      where: { id: parseInt(id) },
+      data: {
+        dataRefeicao: dataRefeicao ? new Date(dataRefeicao) : undefined,
+        horario: horario,
+        turmaId: turmaId ? parseInt(turmaId) : undefined,
+        pratoId: pratoId ? parseInt(pratoId) : undefined,
+        restricaoId: restricaoId ? parseInt(restricaoId) : null
+      },
+      include: {
+        turma: true,
+        prato: true,
+        restricao: true
+      }
+    });
+
+    res.json(cardapio);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Erro ao atualizar cardápio" });
+  }
+});
+
+// EXCLUIR cardápio (NOVO)
+app.delete('/admin/cardapio/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Primeiro exclui as produções relacionadas
+    await prisma.producaoRefeicao.deleteMany({
+      where: { cardapioId: parseInt(id) }
+    });
+
+    // Depois exclui o cardápio
+    await prisma.cardapioSemanal.delete({
+      where: { id: parseInt(id) }
+    });
+
+    res.json({ success: true, message: "Cardápio excluído com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Erro ao excluir cardápio" });
+  }
+});
+
+// ============================================
+// 2. CRUD COMPLETO DE PRATOS (NOVO)
+// ============================================
+
+// Listar todos os pratos
+app.get('/admin/pratos', async (req, res) => {
+  try {
+    const pratos = await prisma.prato.findMany({
+      include: {
+        ingredientes: {
+          include: {
+            ingrediente: true
+          }
+        }
+      }
+    });
+    res.json(pratos);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar pratos" });
+  }
+});
+
+// Criar prato
+app.post('/admin/pratos', async (req, res) => {
+  const { nome, ingredientes } = req.body;
+
+  try {
+    const prato = await prisma.prato.create({
+      data: {
+        nome: nome,
+        ingredientes: {
+          create: ingredientes.map(ing => ({
+            ingredienteId: parseInt(ing.ingredienteId),
+            quantidade: parseFloat(ing.quantidade)
+          }))
+        }
+      },
+      include: {
+        ingredientes: {
+          include: {
+            ingrediente: true
+          }
+        }
+      }
+    });
+
+    res.status(201).json(prato);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Erro ao criar prato" });
+  }
+});
+
+// Atualizar prato
+app.put('/admin/pratos/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nome, ingredientes } = req.body;
+
+  try {
+    // Remove ingredientes antigos
+    await prisma.pratoIngrediente.deleteMany({
+      where: { pratoId: parseInt(id) }
+    });
+
+    // Atualiza prato com novos ingredientes
+    const prato = await prisma.prato.update({
+      where: { id: parseInt(id) },
+      data: {
+        nome: nome,
+        ingredientes: {
+          create: ingredientes.map(ing => ({
+            ingredienteId: parseInt(ing.ingredienteId),
+            quantidade: parseFloat(ing.quantidade)
+          }))
+        }
+      },
+      include: {
+        ingredientes: {
+          include: {
+            ingrediente: true
+          }
+        }
+      }
+    });
+
+    res.json(prato);
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Erro ao atualizar prato" });
+  }
+});
+
+// Excluir prato
+app.delete('/admin/pratos/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Remove ingredientes
+    await prisma.pratoIngrediente.deleteMany({
+      where: { pratoId: parseInt(id) }
+    });
+
+    // Remove referências em cardápios
+    await prisma.cardapioSemanal.updateMany({
+      where: { pratoId: parseInt(id) },
+      data: { pratoId: null }
+    });
+
+    // Exclui prato
+    await prisma.prato.delete({
+      where: { id: parseInt(id) }
+    });
+
+    res.json({ success: true, message: "Prato excluído com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(400).json({ error: "Erro ao excluir prato" });
+  }
+});
+
+// ============================================
+// 3. BUSCAR CONFIRMAÇÕES POR TURMA (NOVO)
+// ============================================
+
+app.get('/contador/confirmacoes', async (req, res) => {
+  const { turmaId, data } = req.query;
+
+  try {
+    const where = {};
+    if (turmaId) where.turmaId = parseInt(turmaId);
+    if (data) {
+      const dataFilter = new Date(data);
+      where.dataRefeicao = {
+        gte: new Date(dataFilter.setHours(0, 0, 0, 0)),
+        lt: new Date(dataFilter.setHours(23, 59, 59, 999))
+      };
+    }
+
+    const confirmacoes = await prisma.confirmacaoRefeicao.findMany({
+      where,
+      include: {
+        turma: true,
+        restricao: true
+      }
+    });
+
+    res.json(confirmacoes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar confirmações" });
+  }
+});
+
+// ============================================
+// 4. BUSCAR DADOS PARA O COZINHEIRO (ATUALIZADO)
+// ============================================
+
+app.get('/cozinheiro/cardapio/dia', async (req, res) => {
+  const { escolaId } = req.query;
+
+  try {
+    const hoje = new Date();
+    const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
+    const fimDia = new Date(hoje.setHours(23, 59, 59, 999));
+
+    const cardapios = await prisma.cardapioSemanal.findMany({
+      where: {
+        escolaId: parseInt(escolaId),
+        dataRefeicao: {
+          gte: inicioDia,
+          lte: fimDia
+        }
+      },
+      include: {
+        turma: {
+          include: {
+            confirmacoes: {
+              where: {
+                dataRefeicao: {
+                  gte: inicioDia,
+                  lte: fimDia
+                }
+              }
+            }
+          }
+        },
+        prato: {
+          include: {
+            ingredientes: {
+              include: {
+                ingrediente: true
+              }
+            }
+          }
+        },
+        restricao: true
+      }
+    });
+
+    // Calcula total de porções baseado nas confirmações
+    const refeicoes = cardapios.map(c => {
+      const totalPorcoes = c.turma.confirmacoes.reduce((acc, conf) => {
+        return acc + conf.quantidade;
+      }, 0);
+
+      return {
+        id: c.id,
+        horario: c.horario,
+        prato: c.prato.nome,
+        porcoes: totalPorcoes || 0,
+        especiais: c.restricao?.nome || "Nenhuma",
+        ingredientes: c.prato.ingredientes.map(pi => ({
+          nome: pi.ingrediente.nome,
+          quantidade: pi.quantidade
+        }))
+      };
+    });
+
+    res.json(refeicoes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao buscar cardápio do dia" });
+  }
+});
+
 
 // ============================================
 // 3. ADMIN - ESTOQUE
@@ -237,7 +515,7 @@ app.post('/contador/confirmacao', async (req, res) => {
       // ou atualizar as restrições já existentes
       // Por simplicidade, vamos apenas atualizar a confirmação
       // com a primeira restrição (exemplo)
-      
+
       const restricao = restricoes.find(r => r.quantidade > 0);
       if (restricao) {
         await prisma.confirmacaoRefeicao.update({
