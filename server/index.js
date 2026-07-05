@@ -88,8 +88,13 @@ app.get('/admin/cardapio', async (req, res) => {
         escola: true
       }
     });
-
-    res.json(cardapios);
+        const cardapiosFormatados = cardapios.map(item => ({
+      ...item,
+      horario: item.horario 
+        ? item.horario.toISOString().substring(11, 16) 
+        : null
+    }));
+    res.json(cardapiosFormatados); //se tudo der certo é praquela data lá nn aparecer no site...
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Erro ao buscar cardápios" });
@@ -101,14 +106,17 @@ app.post('/admin/cardapio', async (req, res) => {
   const { dataRefeicao, horario, escolaId, turmaId, pratoId, restricaoId } = req.body;
 
   try {
+    const horarioFormatado = new Date(`1993-12-10T${horario}:00Z`); //data ficticia só pra não dá erro de date invalid; btw, dia que doom 1 lanço
+    const parsedRestricaoId = parseInt(restricaoId);
+    const temRestricao = !isNaN(parsedRestricaoId); //se nn escrever nada na Id ele vai achar que é NULL e ai nn vai ser int... eu acho???
     const cardapio = await prisma.cardapioSemanal.create({
       data: {
         dataRefeicao: new Date(dataRefeicao),
-        horario: horario,
-        escolaId: parseInt(escolaId),
-        turmaId: parseInt(turmaId),
-        pratoId: parseInt(pratoId),
-        restricaoId: restricaoId ? parseInt(restricaoId) : null
+        horario: horarioFormatado,
+        escola: {connect:{ id: parseInt(escolaId)} },
+        turma: {connect:{ id: parseInt(turmaId)} },
+        prato: {connect:{ id: parseInt(pratoId)} },
+        ...(temRestricao ? { restricao: { connect: { id: parsedRestricaoId } } } : {}),
       },
       include: {
         turma: true,
@@ -124,7 +132,7 @@ app.post('/admin/cardapio', async (req, res) => {
   }
 });
 
-// ATUALIZAR cardápio (NOVO)
+// ATUALIZAR cardápio (NOVO) sei lá pra que isso serve
 app.put('/admin/cardapio/:id', async (req, res) => {
   const { id } = req.params;
   const { dataRefeicao, horario, turmaId, pratoId, restricaoId } = req.body;
@@ -153,7 +161,7 @@ app.put('/admin/cardapio/:id', async (req, res) => {
   }
 });
 
-// EXCLUIR cardápio (NOVO)
+// EXCLUIR cardápio (NOVO) meio obvio não?
 app.delete('/admin/cardapio/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -428,7 +436,7 @@ app.get('/admin/estoque', async (req, res) => {
   }
 });
 
-// Registrar movimentação de estoque
+// Registrar movimentação de estoque // Então, por algum motivo nn tem como criar estoque no site
 app.post('/admin/estoque/movimentacao', async (req, res) => {
   const { estoqueId, tipo, quantidade } = req.body;
 
@@ -443,7 +451,7 @@ app.post('/admin/estoque/movimentacao', async (req, res) => {
       }
     });
 
-    // Registra movimentação
+    // Registra movimentação... se deus permitir
     const movimentacao = await prisma.movimentacaoEstoque.create({
       data: {
         tipo: tipo,
@@ -549,8 +557,9 @@ app.get('/cozinheiro/cardapio/dia', async (req, res) => {
 
   try {
     const hoje = new Date();
-    const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
-    const fimDia = new Date(hoje.setHours(23, 59, 59, 999));
+    // Ajuste para garantir que pegamos o dia correto sem problemas de fuso horário
+    // const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
+    // const fimDia = new Date(hoje.setHours(23, 59, 59, 999));
 
     const cardapios = await prisma.cardapioSemanal.findMany({
       where: {
@@ -561,24 +570,22 @@ app.get('/cozinheiro/cardapio/dia', async (req, res) => {
         }
       },
       include: {
-        turma: true,
+        turma: {
+          include: { confirmacoes: true } // ADICIONADO: Necessário para o reduce funcionar
+        },
         prato: {
           include: {
-            ingredientes: {
-              include: {
-                ingrediente: true
-              }
-            }
+            ingredientes: { include: { ingrediente: true } }
           }
         },
         restricao: true
       }
     });
 
-    // Formata resposta para o frontend
     const refeicoes = cardapios.map(c => ({
       id: c.id,
-      horario: c.horario,
+      // Formatando a hora para evitar o "1970-01-01..." no frontend
+      horario: c.horario ? c.horario.toISOString().substring(11, 16) : '--:--',
       prato: c.prato.nome,
       porcoes: c.turma.confirmacoes?.reduce((acc, conf) => acc + conf.quantidade, 0) || 0,
       especiais: c.restricao?.nome || "Nenhuma",
@@ -590,8 +597,8 @@ app.get('/cozinheiro/cardapio/dia', async (req, res) => {
 
     res.json(refeicoes);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar cardápio do dia" });
+    console.error("Erro no Cardápio do Dia:", error);
+    res.status(500).json({ error: "Erro ao buscar cardápio" });
   }
 });
 
@@ -600,27 +607,26 @@ app.post('/cozinheiro/producao', async (req, res) => {
   const { cardapioId, usuarioId, horaPreparo, kgProduzido, kgSobra } = req.body;
 
   try {
+    // CONVERSÃO DA HORA (igual fizemos no Admin)
+    const horaFormatada = new Date(`1970-01-01T${horaPreparo}:00Z`);
+
     const producao = await prisma.producaoRefeicao.create({
       data: {
-        horaPreparo: horaPreparo,
+        horaPreparo: horaFormatada, // Usa o objeto Date
         kgProduzido: parseFloat(kgProduzido),
-        kgSobra: parseFloat(kgSobra),
+        kgSobra: parseFloat(kgSobra) || 0,
         cardapioId: parseInt(cardapioId),
         usuarioId: parseInt(usuarioId)
       },
       include: {
-        cardapio: {
-          include: {
-            prato: true
-          }
-        },
+        cardapio: { include: { prato: true } },
         usuario: true
       }
     });
 
     res.status(201).json(producao);
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao registrar produção:", error);
     res.status(400).json({ error: "Erro ao registrar produção" });
   }
 });
