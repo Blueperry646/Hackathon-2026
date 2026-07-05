@@ -1,0 +1,583 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* =========================
+   LAYOUT PRINCIPAL
+========================= */
+
+.cook-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f0f4f8;
+    border: 8px solid #0b5ea8;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.cook-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 30px;
+    background: #ffffff;
+    color: #0b5ea8;
+    font-weight: bold;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.cook-header h1 {
+    font-size: 24px;
+    letter-spacing: 0.5px;
+}
+
+.cook-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    background: #f0f4f8;
+    padding: 6px 16px;
+    border-radius: 4px;
+}
+
+.cook-page hr {
+    height: 4px;
+    background: #0b5ea8;
+    border: none;
+    margin: 0;
+}
+
+/* =========================
+   MAIN LAYOUT
+========================= */
+
+.cook-main {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    flex: 1;
+    background: #f0f4f8;
+}
+
+/* =========================
+   LEFT PANEL - REFEIÇÕES
+========================= */
+
+.left-panel {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.panel-title {
+    color: #0b5ea8;
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e4e8;
+}
+
+/* CARD DE REFEIÇÃO */
+.meal-card {
+    background: #ffffff;
+    color: #2c3e50;
+    padding: 18px 20px;
+    border-radius: 6px;
+    border: 1px solid #e0e4e8;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.meal-card .meal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.meal-card .meal-header h3 {
+    font-size: 16px;
+    color: #0b5ea8;
+    font-weight: bold;
+}
+
+.meal-card .meal-header .badge {
+    background: #0b5ea8;
+    color: white;
+    padding: 2px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.meal-card .meal-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 15px;
+}
+
+.meal-card .meal-info p {
+    font-size: 14px;
+    color: #555;
+    padding: 2px 0;
+}
+
+.meal-card .meal-info strong {
+    color: #2c3e50;
+}
+
+/* CARD VAZIO */
+.empty-card {
+    background: #f8fafc;
+    color: #888;
+    border: 2px dashed #d0d4d8;
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.empty-card h3 {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.empty-card p {
+    font-size: 14px;
+}
+
+/* =========================
+   RIGHT PANEL
+========================= */
+
+.right-panel {
+    flex: 1;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* BOTÃO INGREDIENTES */
+.ingredientes-button {
+    background: #ffffff;
+    border: 2px solid #0b5ea8;
+    color: #0b5ea8;
+    font-weight: 600;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.ingredientes-button:hover {
+    background: #f0f4f8;
+}
+
+/* BOX INGREDIENTES */
+.ingredientes-box {
+    background: #ffffff;
+    border: 1px solid #e0e4e8;
+    border-radius: 6px;
+    padding: 15px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.prato-box {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.prato-box:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.prato-box h3 {
+    color: #0b5ea8;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.prato-box ul {
+    margin-left: 20px;
+    font-size: 13px;
+    color: #555;
+    list-style: none;
+}
+
+.prato-box ul li {
+    padding: 2px 0;
+    position: relative;
+    padding-left: 16px;
+}
+
+.prato-box ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #0b5ea8;
+}
+
+.sem-pratos {
+    color: #999;
+    text-align: center;
+    padding: 15px 0;
+    font-size: 14px;
+}
+
+/* =========================
+   FORMULÁRIO
+========================= */
+
+.form-section {
+    margin-top: 5px;
+}
+
+.form-section .panel-title {
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e4e8;
+}
+
+.form-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #ffffff;
+    border: 1px solid #e0e4e8;
+    border-radius: 6px;
+    padding: 18px 20px;
+}
+
+.form-box label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-top: 4px;
+}
+
+.form-box input {
+    padding: 10px 12px;
+    border: 1px solid #d0d4d8;
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    background: #fafbfc;
+}
+
+.form-box input:focus {
+    outline: 2px solid #0b5ea8;
+    outline-offset: 2px;
+    background: white;
+}
+
+.save-button {
+    margin-top: 12px;
+    background: #0b5ea8;
+    color: white;
+    border: none;
+    padding: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.save-button:hover {
+    background: #0a4a8a;
+}
+
+.save-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================
+   HISTÓRICO
+========================= */
+
+.historico-section {
+    padding: 20px 30px;
+    background: #ffffff;
+    border-top: 2px solid #e0e4e8;
+}
+
+.historico-section h2 {
+    color: #0b5ea8;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+.historico-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.historico-table thead th {
+    background: #0b5ea8;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.historico-table tbody td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eef2f7;
+    color: #444;
+}
+
+.historico-table tbody tr:hover td {
+    background: #f8fafc;
+}
+
+.historico-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.empty-history {
+    color: #999;
+    text-align: center;
+    padding: 20px 0;
+    font-size: 15px;
+}
+
+/* =========================
+   MENSAGENS DE FEEDBACK
+========================= */
+
+.mensagem {
+    padding: 12px 20px;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+    margin: 0 20px 10px 20px;
+}
+
+.mensagem.sucesso {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.mensagem.erro {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.mensagem.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+.cook-footer {
+    text-align: center;
+    padding: 18px;
+    font-size: 13px;
+    color: #888;
+    background: white;
+    border-top: 2px solid #0b5ea8;
+    margin-top: auto;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+/* Tablet */
+@media (max-width: 992px) {
+    .cook-main {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .right-panel {
+        min-width: auto;
+    }
+
+    .cook-header {
+        padding: 15px 20px;
+    }
+
+    .cook-header h1 {
+        font-size: 20px;
+    }
+
+    .cook-header h2 {
+        font-size: 16px;
+    }
+
+    .historico-section {
+        padding: 15px 20px;
+    }
+
+    .meal-card .meal-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    .cook-page {
+        border-width: 4px;
+    }
+
+    .cook-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 15px;
+        gap: 6px;
+    }
+
+    .cook-header h1 {
+        font-size: 18px;
+    }
+
+    .cook-header h2 {
+        font-size: 14px;
+        padding: 4px 12px;
+    }
+
+    .cook-main {
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .right-panel {
+        min-width: auto;
+    }
+
+    .meal-card {
+        padding: 14px 16px;
+    }
+
+    .meal-card .meal-header h3 {
+        font-size: 14px;
+    }
+
+    .meal-card .meal-info p {
+        font-size: 13px;
+    }
+
+    .form-box {
+        padding: 14px 16px;
+    }
+
+    .form-box input {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .save-button {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .historico-section {
+        padding: 12px 15px;
+    }
+
+    .historico-section h2 {
+        font-size: 17px;
+    }
+
+    .historico-table {
+        font-size: 12px;
+        display: block;
+        overflow-x: auto;
+    }
+
+    .historico-table thead th,
+    .historico-table tbody td {
+        padding: 8px 10px;
+        white-space: nowrap;
+    }
+
+    .ingredientes-box {
+        max-height: 180px;
+        padding: 12px;
+    }
+
+    .cook-footer {
+        font-size: 11px;
+        padding: 12px;
+    }
+
+    .mensagem {
+        margin: 0 10px 8px 10px;
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+}
+
+/* Mobile pequeno */
+@media (max-width: 400px) {
+    .cook-header h1 {
+        font-size: 16px;
+    }
+
+    .cook-header h2 {
+        font-size: 12px;
+    }
+
+    .panel-title {
+        font-size: 16px;
+    }
+
+    .meal-card {
+        padding: 12px 14px;
+    }
+
+    .meal-card .meal-header h3 {
+        font-size: 13px;
+    }
+
+    .meal-card .meal-info p {
+        font-size: 12px;
+    }
+
+    .form-box label {
+        font-size: 12px;
+    }
+
+    .form-box input {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+
+    .save-button {
+        font-size: 13px;
+        padding: 8px;
+    }
+
+    .historico-table {
+        font-size: 11px;
+    }
+
+    .historico-table thead th,
+    .historico-table tbody td {
+        padding: 6px 8px;
+    }
+}

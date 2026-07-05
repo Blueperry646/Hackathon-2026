@@ -1,0 +1,397 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* =========================
+   LAYOUT PRINCIPAL
+========================= */
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    padding: 40px 20px;
+    border: 8px solid #0b5ea8;
+}
+
+/* =========================
+   HEADER COM CREDENCIAIS
+========================= */
+
+.login-header {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 0 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.login-header .credenciais {
+    font-size: 13px;
+    color: #666;
+    background: #f0f4f8;
+    padding: 6px 16px;
+    border-radius: 4px;
+}
+
+.login-header .credenciais strong {
+    color: #0b5ea8;
+}
+
+.login-header .credenciais span {
+    margin: 0 6px;
+    color: #ccc;
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.logo-area {
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+}
+
+.logo-area img {
+    max-width: 450px;
+    width: 100%;
+    height: auto;
+    display: inline-block;
+}
+
+/* =========================
+   CAIXA DE LOGIN
+========================= */
+
+.login-box {
+    width: 520px;
+    max-width: 100%;
+    background: #0b5ea8;
+    padding: 45px 55px 50px;
+    border-radius: 8px;
+}
+
+.login-box h1 {
+    color: #ffffff;
+    text-align: center;
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.login-box .line {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    margin-bottom: 40px;
+}
+
+/* =========================
+   FORMULÁRIO
+========================= */
+
+.login-box form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-box form .input-group {
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.login-box form .input-group label {
+    display: block;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+}
+
+.login-box input {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 4px;
+    padding: 0 18px;
+    font-size: 17px;
+    color: #2c3e50;
+    background: #ffffff;
+    transition: box-shadow 0.2s;
+}
+
+.login-box input::placeholder {
+    color: #aaa;
+    font-size: 14px;
+}
+
+.login-box input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+}
+
+.login-box input:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* =========================
+   MENSAGEM DE ERRO
+========================= */
+
+.login-box .erro {
+    width: 100%;
+    background: rgba(220, 53, 69, 0.15);
+    color: #ffd6d6;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+/* =========================
+   BOTÃO
+========================= */
+
+.login-box button {
+    width: 160px;
+    height: 50px;
+    background: #ffffff;
+    color: #0b5ea8;
+    border: none;
+    border-radius: 4px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 8px;
+    letter-spacing: 1px;
+}
+
+.login-box button:hover {
+    background: #e8edf3;
+}
+
+.login-box button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================
+   FOOTER GRUDADO NO CHÃO
+========================= */
+
+.login-footer {
+    margin-top: auto;
+    padding: 20px 0 10px 0;
+    text-align: center;
+    color: #999;
+    font-size: 13px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.login-footer span {
+    color: #0b5ea8;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+/* Tablet */
+@media (max-width: 768px) {
+    .login-page {
+        padding: 30px 15px;
+        border-width: 6px;
+        justify-content: flex-start;
+        padding-top: 50px;
+    }
+
+    .login-box {
+        padding: 35px 35px 40px;
+        border-radius: 6px;
+        width: 460px;
+    }
+
+    .login-box h1 {
+        font-size: 30px;
+    }
+
+    .login-box .line {
+        margin-bottom: 32px;
+    }
+
+    .logo-area {
+        margin-bottom: 30px;
+    }
+
+    .logo-area img {
+        max-width: 350px;
+    }
+
+    .login-box input {
+        height: 46px;
+        font-size: 16px;
+        padding: 0 16px;
+    }
+
+    .login-box button {
+        width: 140px;
+        height: 46px;
+        font-size: 16px;
+    }
+
+    .login-header {
+        max-width: 460px;
+    }
+
+    .login-header .credenciais {
+        font-size: 12px;
+        padding: 4px 14px;
+    }
+
+    .login-footer {
+        font-size: 12px;
+        padding: 15px 0 5px 0;
+    }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+    .login-page {
+        padding: 20px 12px;
+        border-width: 4px;
+        justify-content: flex-start;
+        padding-top: 30px;
+    }
+
+    .login-box {
+        padding: 28px 20px 32px;
+        border-radius: 4px;
+        width: 100%;
+    }
+
+    .login-box h1 {
+        font-size: 24px;
+        letter-spacing: 1px;
+    }
+
+    .login-box .line {
+        margin-bottom: 25px;
+    }
+
+    .logo-area {
+        margin-bottom: 22px;
+    }
+
+    .logo-area img {
+        max-width: 250px;
+    }
+
+    .login-box form .input-group {
+        margin-bottom: 18px;
+    }
+
+    .login-box form .input-group label {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+
+    .login-box input {
+        height: 42px;
+        font-size: 15px;
+        padding: 0 14px;
+    }
+
+    .login-box input::placeholder {
+        font-size: 13px;
+    }
+
+    .login-box button {
+        width: 130px;
+        height: 42px;
+        font-size: 15px;
+    }
+
+    .login-box .erro {
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+
+    .login-header {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 20px;
+        gap: 6px;
+    }
+
+    .login-header .credenciais {
+        font-size: 11px;
+        padding: 4px 12px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .login-header .credenciais span {
+        display: none;
+    }
+
+    .login-header .credenciais .quebra {
+        display: inline;
+    }
+
+    .login-footer {
+        font-size: 11px;
+        padding: 12px 0 5px 0;
+    }
+}
+
+/* Mobile muito pequeno */
+@media (max-width: 360px) {
+    .login-box {
+        padding: 22px 15px 26px;
+    }
+
+    .login-box h1 {
+        font-size: 20px;
+    }
+
+    .login-box input {
+        height: 38px;
+        font-size: 14px;
+        padding: 0 12px;
+    }
+
+    .login-box button {
+        width: 110px;
+        height: 38px;
+        font-size: 14px;
+    }
+
+    .logo-area img {
+        max-width: 200px;
+    }
+
+    .login-box form .input-group {
+        margin-bottom: 14px;
+    }
+}

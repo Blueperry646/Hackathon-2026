@@ -1,0 +1,485 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* =========================
+   LAYOUT PRINCIPAL
+========================= */
+
+.admin-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f0f4f8;
+    border: 8px solid #0b5ea8;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 30px;
+    background: #ffffff;
+    color: #0b5ea8;
+    font-weight: bold;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.admin-header h1 {
+    font-size: 24px;
+    letter-spacing: 0.5px;
+}
+
+.admin-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    background: #f0f4f8;
+    padding: 6px 16px;
+    border-radius: 4px;
+}
+
+.admin-page hr {
+    height: 4px;
+    background: #0b5ea8;
+    border: none;
+    margin: 0;
+}
+
+/* =========================
+   BODY LAYOUT
+========================= */
+
+.admin-body {
+    flex: 1;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: #f0f4f8;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    width: 260px;
+    min-width: 200px;
+    background: #0b5ea8;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 25px 20px;
+    gap: 12px;
+    border-radius: 8px;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.sidebar h3 {
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 20px;
+    letter-spacing: 1px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar button {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 12px 15px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 15px;
+    transition: background-color 0.2s;
+    border-radius: 6px;
+    text-align: left;
+}
+
+.sidebar button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+.sidebar button.active {
+    background: white;
+    color: #0b5ea8;
+    border-color: white;
+}
+
+/* =========================
+   CONTENT AREA
+========================= */
+
+.admin-content {
+    flex: 1;
+    padding: 0;
+    background: transparent;
+    min-height: 500px;
+}
+
+/* =========================
+   CONTENT BOX (SEÇÕES)
+========================= */
+
+.content-box {
+    background: white;
+    border-radius: 8px;
+    padding: 25px 30px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border: 1px solid #e0e4e8;
+}
+
+.content-box h2 {
+    color: #0b5ea8;
+    margin-bottom: 5px;
+    font-size: 22px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #eef2f7;
+}
+
+.content-box h3 {
+    color: #2c3e50;
+    font-size: 17px;
+    margin: 10px 0 5px 0;
+}
+
+.content-box ul {
+    margin-left: 20px;
+    list-style: none;
+}
+
+.content-box li {
+    margin-bottom: 10px;
+    color: #444;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 4px;
+    border-left: 3px solid #0b5ea8;
+}
+
+/* =========================
+   TABELAS
+========================= */
+
+.content-box table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.content-box table th {
+    background: #0b5ea8;
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.content-box table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #e8ecf1;
+}
+
+.content-box table tr:hover td {
+    background: #f8fafc;
+}
+
+.content-box table tr:last-child td {
+    border-bottom: none;
+}
+
+/* =========================
+   FORMULÁRIOS
+========================= */
+
+.content-box form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 6px;
+    border: 1px solid #e0e4e8;
+}
+
+.content-box form label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #2c3e50;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.content-box form input,
+.content-box form select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d0d4d8;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+}
+
+.content-box form input:focus,
+.content-box form select:focus {
+    outline: none;
+    border-color: #0b5ea8;
+    box-shadow: 0 0 0 3px rgba(11, 94, 168, 0.1);
+}
+
+.content-box form button {
+    padding: 10px 20px;
+    background: #0b5ea8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    grid-column: 1 / -1;
+}
+
+.content-box form button:hover {
+    background: #0a4a8a;
+}
+
+.content-box form button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================
+   CARDS DE ANÁLISE
+========================= */
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.dashboard-card {
+    background: white;
+    padding: 20px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid #e0e4e8;
+}
+
+.dashboard-card .numero {
+    font-size: 32px;
+    font-weight: bold;
+    color: #0b5ea8;
+}
+
+.dashboard-card .label {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.dashboard-card:nth-child(1) { border-top: 4px solid #0b5ea8; }
+.dashboard-card:nth-child(2) { border-top: 4px solid #28a745; }
+.dashboard-card:nth-child(3) { border-top: 4px solid #ffc107; }
+.dashboard-card:nth-child(4) { border-top: 4px solid #dc3545; }
+
+/* =========================
+   FOOTER
+========================= */
+
+.admin-footer {
+    text-align: center;
+    padding: 18px;
+    font-size: 13px;
+    color: #888;
+    background: white;
+    border-top: 2px solid #0b5ea8;
+    margin-top: auto;
+}
+
+/* =========================
+   RESPONSIVIDADE
+========================= */
+
+@media (max-width: 992px) {
+    .admin-body {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .sidebar {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 15px 20px;
+        position: static;
+        height: auto;
+        border-radius: 6px;
+    }
+
+    .sidebar h3 {
+        width: 100%;
+        margin-bottom: 5px;
+        padding-bottom: 10px;
+        font-size: 18px;
+    }
+
+    .sidebar button {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
+        font-size: 13px;
+        padding: 10px 15px;
+        text-align: center;
+    }
+
+    .admin-header {
+        padding: 15px 20px;
+    }
+
+    .admin-header h1 {
+        font-size: 20px;
+    }
+
+    .admin-header h2 {
+        font-size: 16px;
+    }
+
+    .content-box {
+        padding: 20px;
+    }
+
+    .content-box form {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .admin-page {
+        border-width: 4px;
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px 15px;
+        gap: 8px;
+    }
+
+    .admin-header h1 {
+        font-size: 18px;
+    }
+
+    .admin-header h2 {
+        font-size: 14px;
+        padding: 4px 12px;
+    }
+
+    .admin-body {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .sidebar {
+        flex-direction: column;
+        padding: 12px;
+        gap: 8px;
+        border-radius: 6px;
+    }
+
+    .sidebar h3 {
+        font-size: 16px;
+        padding-bottom: 8px;
+    }
+
+    .sidebar button {
+        min-width: auto;
+        font-size: 12px;
+        padding: 8px 12px;
+        text-align: center;
+    }
+
+    .content-box {
+        padding: 15px;
+        min-height: 250px;
+        border-radius: 6px;
+    }
+
+    .content-box h2 {
+        font-size: 18px;
+    }
+
+    .content-box table {
+        font-size: 12px;
+        display: block;
+        overflow-x: auto;
+    }
+
+    .content-box table th,
+    .content-box table td {
+        padding: 8px 10px;
+        white-space: nowrap;
+    }
+
+    .content-box form {
+        padding: 15px;
+        gap: 10px;
+    }
+
+    .content-box form input,
+    .content-box form select {
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .dashboard-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .dashboard-card .numero {
+        font-size: 24px;
+    }
+
+    .admin-footer {
+        font-size: 11px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 400px) {
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-header h1 {
+        font-size: 16px;
+    }
+
+    .admin-header h2 {
+        font-size: 12px;
+    }
+
+    .sidebar button {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+}
