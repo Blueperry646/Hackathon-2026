@@ -138,16 +138,6 @@ function Login() {
 
     return (
         <div className="login-page">
-            
-            {/* ================= HEADER COM CREDENCIAIS ================= */}
-            <div className="login-header">
-                <span></span> {/* Espaçador para alinhar à direita */}
-                <div className="credenciais">
-                    <strong>Admin:</strong> admin123 <span>|</span> 
-                    <strong> Contador:</strong> contador123 <span>|</span> 
-                    <strong> Cozinheiro:</strong> cozinheiro123
-                </div>
-            </div>
 
             {/* ================= LOGO ================= */}
             <div className="logo-area">
