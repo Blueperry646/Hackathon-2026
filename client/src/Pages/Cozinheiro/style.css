@@ -23,7 +23,6 @@
     background: #ffffff;
     color: #0b5ea8;
     font-weight: bold;
-    border-bottom: 2px solid #0b5ea8;
 }
 
 .cook-header h1 {
@@ -44,7 +43,6 @@
 /*  MAIN LAYOUT  */
 .cook-main {
     display: flex;
-    flex: 1;
     justify-content: space-between;
     padding: 20px;
     gap: 20px;

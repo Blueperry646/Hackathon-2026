@@ -9,6 +9,11 @@ body{
     background:#ffffff;
 }
 
+.encherLinguica{
+    flex: 1;
+    border-bottom: 2px solid #0b5ea8;
+}
+
 /* Página */
 .login-page{
     min-height:100vh;

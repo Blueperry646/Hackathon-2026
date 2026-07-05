@@ -127,7 +127,7 @@ function Login() {
                     {/* Campo de email do usuário */}
                     <input
                         type="email"
-                        placeholder="IDENTIFICAÇÃO DO USUÁRIO"
+                        placeholder="E-MAIL"
                         onChange={(e) => setEmail(e.target.value)}
                     />
 
@@ -146,6 +146,8 @@ function Login() {
                 </form>
 
             </div>
+
+            <div className="encherLinguica"></div>
 
             {/* ================= FOOTER ================= */}
 
