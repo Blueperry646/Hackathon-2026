@@ -36,7 +36,8 @@ app.post('/login', async (req, res) => {
           nome: user.nome,
           identificador: user.identificador,
           perfil: user.perfil,
-          escola: user.escola.nome
+          escola: user.escola.nome,
+          escolaId: user.escolaId
         }
       });
     } else {
@@ -344,10 +345,24 @@ app.get('/contador/confirmacoes', async (req, res) => {
 app.get('/cozinheiro/cardapio/dia', async (req, res) => {
   const { escolaId } = req.query;
 
+  if (!escolaId) {
+    return res.status(400).json({ error: "escolaId é obrigatório" });
+  }
+
   try {
+    // 1. Pegamos a data atual do servidor/máquina local
     const hoje = new Date();
-    const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
-    const fimDia = new Date(hoje.setHours(23, 59, 59, 999));
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    
+    // Formato "YYYY-MM-DD" limpo
+    const dataHojeStr = `${ano}-${mes}-${dia}`;
+
+    // 2. Criamos limites exatos em UTC absoluto para o dia de hoje
+    // Isso garante que o banco compare a data sem distorção de fuso horário local
+    const inicioDia = new Date(`${dataHojeStr}T00:00:00.000Z`);
+    const fimDia = new Date(`${dataHojeStr}T23:59:59.999Z`);
 
     const cardapios = await prisma.cardapioSemanal.findMany({
       where: {
@@ -383,7 +398,7 @@ app.get('/cozinheiro/cardapio/dia', async (req, res) => {
       }
     });
 
-    // Calcula total de porções baseado nas confirmações
+    // Calcula o total de porções e mapeia os dados para o frontend
     const refeicoes = cardapios.map(c => {
       const totalPorcoes = c.turma.confirmacoes.reduce((acc, conf) => {
         return acc + conf.quantidade;
@@ -391,7 +406,10 @@ app.get('/cozinheiro/cardapio/dia', async (req, res) => {
 
       return {
         id: c.id,
-        horario: c.horario,
+        // Evita fuso horário na formatação de hora simples
+        horario: c.horario 
+          ? c.horario.toISOString().substring(11, 16) 
+          : '--:--',
         prato: c.prato.nome,
         porcoes: totalPorcoes || 0,
         especiais: c.restricao?.nome || "Nenhuma",
@@ -404,7 +422,7 @@ app.get('/cozinheiro/cardapio/dia', async (req, res) => {
 
     res.json(refeicoes);
   } catch (error) {
-    console.error(error);
+    console.error("Erro no Cardápio do Dia do Cozinheiro:", error);
     res.status(500).json({ error: "Erro ao buscar cardápio do dia" });
   }
 });
@@ -552,55 +570,7 @@ app.post('/contador/confirmacao', async (req, res) => {
 // ============================================
 
 // Cardápio do dia
-app.get('/cozinheiro/cardapio/dia', async (req, res) => {
-  const { escolaId } = req.query;
 
-  try {
-    const hoje = new Date();
-    // Ajuste para garantir que pegamos o dia correto sem problemas de fuso horário
-    // const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
-    // const fimDia = new Date(hoje.setHours(23, 59, 59, 999));
-
-    const cardapios = await prisma.cardapioSemanal.findMany({
-      where: {
-        escolaId: parseInt(escolaId),
-        dataRefeicao: {
-          gte: inicioDia,
-          lte: fimDia
-        }
-      },
-      include: {
-        turma: {
-          include: { confirmacoes: true } // ADICIONADO: Necessário para o reduce funcionar
-        },
-        prato: {
-          include: {
-            ingredientes: { include: { ingrediente: true } }
-          }
-        },
-        restricao: true
-      }
-    });
-
-    const refeicoes = cardapios.map(c => ({
-      id: c.id,
-      // Formatando a hora para evitar o "1970-01-01..." no frontend
-      horario: c.horario ? c.horario.toISOString().substring(11, 16) : '--:--',
-      prato: c.prato.nome,
-      porcoes: c.turma.confirmacoes?.reduce((acc, conf) => acc + conf.quantidade, 0) || 0,
-      especiais: c.restricao?.nome || "Nenhuma",
-      ingredientes: c.prato.ingredientes.map(pi => ({
-        nome: pi.ingrediente.nome,
-        quantidade: pi.quantidade
-      }))
-    }));
-
-    res.json(refeicoes);
-  } catch (error) {
-    console.error("Erro no Cardápio do Dia:", error);
-    res.status(500).json({ error: "Erro ao buscar cardápio" });
-  }
-});
 
 // Registrar produção
 app.post('/cozinheiro/producao', async (req, res) => {
@@ -643,6 +613,7 @@ app.get('/cozinheiro/historico', async (req, res) => {
     const historico = await prisma.producaoRefeicao.findMany({
       where: {
         usuarioId: parseInt(usuarioId),
+        // USANDO O CAMPO CORRETO: horaPreparo
         horaPreparo: {
           gte: inicioDia,
           lte: fimDia
@@ -656,13 +627,21 @@ app.get('/cozinheiro/historico', async (req, res) => {
         }
       },
       orderBy: {
-        horaPreparo: 'desc'
+        horaPreparo: 'desc' // Ordena pela hora de preparo mais recente
       }
     });
 
-    res.json(historico);
+    // Formata a hora para "HH:mm" para o frontend não dar "Invalid Date"
+    const historicoFormatado = historico.map(item => ({
+      ...item,
+      horaPreparo: item.horaPreparo 
+        ? item.horaPreparo.toISOString().substring(11, 16) 
+        : '--:--'
+    }));
+
+    res.json(historicoFormatado);
   } catch (error) {
-    console.error(error);
+    console.error("Erro no Histórico:", error);
     res.status(500).json({ error: "Erro ao buscar histórico" });
   }
 });
