@@ -1,4 +1,9 @@
+import "./style.css";
 function AdminPage() {
-  return <h1>Página de AdminPage</h1>;
+  return (
+    <div>
+      
+    </div>
+  );
 }
 export default AdminPage;

@@ -10,7 +10,7 @@ function AppRoutes() {
             <Route path="/" element={<Login />} />
             <Route path="/admin-dashboard" element={<AdminPage />} />
             <Route path="/contador" element={<Contador />} />
-            <Route path="/cozinheir" element={<Cozinheiro />} />
+            <Route path="/cozinheiro" element={<Cozinheiro />} />
         </Routes>
     );
 }
