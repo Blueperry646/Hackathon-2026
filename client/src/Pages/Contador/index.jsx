@@ -64,6 +64,8 @@ function Contador() {
             })
         );
 
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+
         /*
         =========================================
         BUSCA DADOS INICIAIS NO BACKEND
@@ -82,32 +84,18 @@ function Contador() {
         /*
             BUSCAR LISTA DE TURMAS
         */
-        /*
-        axios.get("/contador/turmas")
-            .then(res => setTurmas(res.data));
-        */
+        axios.get(`http://localhost:5000/contador/turmas?escolaId=1`).then(res => setTurmas(res.data));
 
         /*
             BUSCAR RESTRIÇÕES ALIMENTARES
             (ex: alergias, dietas especiais etc.)
         */
-        /*
-        axios.get("/contador/restricoes")
-            .then(res => {
-
-                setRestricoes(res.data);
-
-                // inicializa objeto de controle com 0 para cada restrição
-                const inicial = {};
-
-                res.data.forEach(r => {
-                    inicial[r.id] = 0;
-                });
-
-                setValoresRestricoes(inicial);
-
-            });
-        */
+        axios.get('http://localhost:5000/contador/restricoes').then(res => {
+            setRestricoes(res.data);
+            const inicial = {};
+            res.data.forEach(r => { inicial[r.id] = 0; });
+            setValoresRestricoes(inicial);
+        });
 
     }, []);
 
@@ -134,47 +122,22 @@ function Contador() {
     // ===========================
 
     async function enviar() {
-
-        /*
-            =========================================
-            MONTAGEM DO PAYLOAD
-            =========================================
-
-            Estrutura enviada ao backend:
-            - turma selecionada
-            - total de alunos
-            - lista de restrições com quantidades
-        */
-
-        const payload = {
-
-            turmaId: turmaSelecionada,
-
-            totalAlunos: Number(totalAlunos) || 0,
-
-            restricoes: restricoes.map(r => ({
+        try {
+            const restricoesArray = restricoes.map(r => ({
                 restricaoId: r.id,
                 quantidade: valoresRestricoes[r.id] || 0
-            }))
+            })).filter(r => r.quantidade > 0);
 
-        };
+            await axios.post('http://localhost:5000/contador/confirmacao', {
+                turmaId: turmaSelecionada,
+                totalAlunos: totalAlunos,
+                restricoes: restricoesArray
+            });
 
-        /*
-            =========================================
-            ENVIO PARA API
-            =========================================
-
-            Endpoint responsável por registrar confirmação
-        */
-
-        /*
-        axios.post("/contador/confirmacao", payload)
-        */
-
-        // Log local para debug
-        console.log("ENVIANDO PARA O BANCO:", payload);
-
-        alert("Dados enviados com sucesso!");
+            alert('Confirmação enviada com sucesso!');
+        } catch (error) {
+            alert('Erro ao enviar confirmação');
+        }
     }
 
     // ===========================

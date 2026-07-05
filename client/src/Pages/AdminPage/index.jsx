@@ -54,11 +54,13 @@ function AdminPage() {
         =========================================
         CARREGAR DADOS INICIAIS
         =========================================
-        axios.get("/admin/turmas")
-        axios.get("/admin/pratos")
-        axios.get("/admin/ingredientes")
-        axios.get("/admin/estoque")
         */
+
+        axios.get('http://localhost:5000/admin/cardapio').then(res => console.log('Cardápios:', res.data));
+
+        axios.get('http://localhost:5000/admin/estoque?escolaId=1').then(res => console.log('Estoque:', res.data));
+
+        axios.get('http://localhost:5000/ingredientes').then(res => console.log('Ingredientes:', res.data));
 
     }, []);
 

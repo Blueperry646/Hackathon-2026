@@ -54,6 +54,8 @@ function Cozinheiro() {
             })
         );
 
+        const usuario = JSON.parse(localStorage.getItem('usuario'));
+
         /*
             ======================================
             BUSCA DE DADOS NO BACKEND (PLACEHOLDER)
@@ -69,80 +71,74 @@ function Cozinheiro() {
             setEscola(...)
         */
 
-        /*
-            BUSCAR REFEIÇÕES PROGRAMADAS DO DIA
-            axios.get("/cozinheiro/refeicoes")
-            setRefeicoes(...)
-        */
+        axios.get(`http://localhost:5000/cozinheiro/cardapio/dia?escolaId=1`).then(res => setRefeicoes(res.data));
 
-        /*
-            BUSCAR HISTÓRICO DE PRODUÇÃO DO DIA
-            axios.get("/cozinheiro/historico")
-            setHistorico(...)
-        */
+        axios.get(`http://localhost:5000/cozinheiro/historico?usuarioId=${usuario.id}`).then(res => setHistorico(res.data));
+}, []);
 
-    }, []);
+// ===========================
+// REGISTRO DE PRODUÇÃO
+// ===========================
 
-    // ===========================
-    // REGISTRO DE PRODUÇÃO
-    // ===========================
+async function salvarRegistro() {
+    const usuario = JSON.parse(localStorage.getItem('usuario'));
 
-    function salvarRegistro() {
+    try {
+        await axios.post('http://localhost:5000/cozinheiro/producao', {
+            cardapioId: refeicoes[0]?.id, // pega o primeiro cardápio do dia
+            usuarioId: usuario.id,
+            horaPreparo: horaPreparo,
+            kgProduzido: kgProduzido,
+            kgSobra: kgSobra
+        });
 
-        /*
-            ======================================
-            ENVIO DE DADOS PARA O BACKEND
-            ======================================
-
-            Dados que seriam enviados:
-            - horaPreparo
-            - kgProduzido
-            - kgSobra
-
-            axios.post("/cozinheiro/registro", {...})
-        */
-
+        alert('Produção registrada com sucesso!');
+        // Recarregar histórico
+        // ...
+    } catch (error) {
+        alert('Erro ao registrar produção');
     }
+}
 
-    // ===========================
-    // RENDERIZAÇÃO DA INTERFACE
-    // ===========================
+// ===========================
+// RENDERIZAÇÃO DA INTERFACE
+// ===========================
 
-    return (
+return (
 
-        <div className="cook-page">
+    <div className="cook-page">
 
-            {/* ================= HEADER ================= */}
+        {/* ================= HEADER ================= */}
 
-            <header className="cook-header">
+        <header className="cook-header">
 
-                <div className="header-left">
-                    <h1>
-                        {/* Exibe nome da escola ou fallback padrão */}
-                        {escola === "" ? "(FAZ O L, NÓIS NÃO TEM BANCO-DE-DADOS)" : escola}
-                    </h1>
-                </div>
+            <div className="header-left">
+                <h1>
+                    {/* Exibe nome da escola ou fallback padrão */}
+                    {escola === "" ? "(FAZ O L, NÓIS NÃO TEM BANCO-DE-DADOS)" : escola}
+                </h1>
+            </div>
 
-                <div className="header-right">
-                    <h2>{dataAtual}</h2>
-                </div>
+            <div className="header-right">
+                <h2>{dataAtual}</h2>
+            </div>
 
-            </header>
+        </header>
 
-            {/* ================= CORPO PRINCIPAL ================= */}
+        {/* ================= CORPO PRINCIPAL ================= */}
 
-            <main className="cook-main">
+        <main className="cook-main">
 
-                {/* ================= PAINEL ESQUERDO ================= */}
+            {/* ================= PAINEL ESQUERDO ================= */}
 
-                <section className="left-panel">
+            <section className="left-panel">
 
-                    <h2 className="panel-title">
-                        REFEIÇÕES PROGRAMADAS
-                    </h2>
+                <h2 className="panel-title">
+                    REFEIÇÕES PROGRAMADAS
+                </h2>
 
-                    {
-                        refeicoes.length === 0 ?
+                {
+                    refeicoes.length === 0 ?
                         (
                             /* Estado vazio quando não há refeições */
                             <div className="meal-card empty-card">
@@ -186,35 +182,35 @@ function Cozinheiro() {
                                 </div>
                             ))
                         )
+                }
+
+            </section>
+
+            {/* ================= PAINEL DIREITO ================= */}
+
+            <aside className="right-panel">
+
+                {/* Botão que alterna visibilidade dos ingredientes */}
+                <button
+                    className="ingredientes-button"
+                    onClick={() =>
+                        setMostrarIngredientes(!mostrarIngredientes)
                     }
-
-                </section>
-
-                {/* ================= PAINEL DIREITO ================= */}
-
-                <aside className="right-panel">
-
-                    {/* Botão que alterna visibilidade dos ingredientes */}
-                    <button
-                        className="ingredientes-button"
-                        onClick={() =>
-                            setMostrarIngredientes(!mostrarIngredientes)
-                        }
-                    >
-                        {
-                            mostrarIngredientes
+                >
+                    {
+                        mostrarIngredientes
                             ? "OCULTAR PRATOS E INGREDIENTES"
                             : "EXIBIR PRATOS E INGREDIENTES"
-                        }
-                    </button>
+                    }
+                </button>
 
-                    {
-                        mostrarIngredientes &&
-                        (
-                            <div className="ingredientes-box">
+                {
+                    mostrarIngredientes &&
+                    (
+                        <div className="ingredientes-box">
 
-                                {
-                                    refeicoes.length === 0 ?
+                            {
+                                refeicoes.length === 0 ?
                                     (
                                         <div className="sem-pratos">
                                             Nenhum prato cadastrado.
@@ -245,110 +241,110 @@ function Cozinheiro() {
 
                                         </div>
                                     ))
-                                }
-
-                            </div>
-                        )
-                    }
-
-                    {/* ================= FORMULÁRIO ================= */}
-
-                    <div className="form-section">
-
-                        <h2 className="panel-title">
-                            REGISTRAR PRODUÇÃO
-                        </h2>
-
-                        <div className="form-box">
-
-                            <label>Horário de preparo</label>
-                            <input
-                                type="time"
-                                value={horaPreparo}
-                                onChange={(e) => setHoraPreparo(e.target.value)}
-                            />
-
-                            <label>Kg produzidos</label>
-                            <input
-                                type="number"
-                                value={kgProduzido}
-                                onChange={(e) => setKgProduzido(e.target.value)}
-                            />
-
-                            <label>Kg sobrou</label>
-                            <input
-                                type="number"
-                                value={kgSobra}
-                                onChange={(e) => setKgSobra(e.target.value)}
-                            />
-
-                            <button
-                                className="save-button"
-                                onClick={salvarRegistro}
-                            >
-                                SALVAR
-                            </button>
+                            }
 
                         </div>
-
-                    </div>
-
-                </aside>
-
-            </main>
-
-            {/* ================= HISTÓRICO ================= */}
-
-            <section className="historico-section">
-
-                <h2>
-                    HISTÓRICO DE PRODUÇÃO DO DIA
-                </h2>
-
-                {
-                    historico.length === 0 ? (
-                        /* Caso não existam registros */
-                        <p className="empty-history">
-                            Nenhum registro realizado ainda.
-                        </p>
-                    ) : (
-                        /* Tabela com histórico de produção */
-                        <table className="historico-table">
-
-                            <thead>
-                                <tr>
-                                    <th>Horário</th>
-                                    <th>Kg Produzidos</th>
-                                    <th>Kg Sobra</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                {
-                                    historico.map((item, index) => (
-                                        <tr key={index}>
-                                            <td>{item.horario}</td>
-                                            <td>{item.produzido}</td>
-                                            <td>{item.sobra}</td>
-                                        </tr>
-                                    ))
-                                }
-                            </tbody>
-
-                        </table>
                     )
                 }
 
-            </section>
+                {/* ================= FORMULÁRIO ================= */}
 
-            {/* ================= FOOTER ================= */}
+                <div className="form-section">
 
-            <footer className="cook-footer">
-                Protótipo da página do cozinheiro desenvolvido pela equipe Try Catcher - Hackathon 2026
-            </footer>
+                    <h2 className="panel-title">
+                        REGISTRAR PRODUÇÃO
+                    </h2>
 
-        </div>
-    );
+                    <div className="form-box">
+
+                        <label>Horário de preparo</label>
+                        <input
+                            type="time"
+                            value={horaPreparo}
+                            onChange={(e) => setHoraPreparo(e.target.value)}
+                        />
+
+                        <label>Kg produzidos</label>
+                        <input
+                            type="number"
+                            value={kgProduzido}
+                            onChange={(e) => setKgProduzido(e.target.value)}
+                        />
+
+                        <label>Kg sobrou</label>
+                        <input
+                            type="number"
+                            value={kgSobra}
+                            onChange={(e) => setKgSobra(e.target.value)}
+                        />
+
+                        <button
+                            className="save-button"
+                            onClick={salvarRegistro}
+                        >
+                            SALVAR
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </main>
+
+        {/* ================= HISTÓRICO ================= */}
+
+        <section className="historico-section">
+
+            <h2>
+                HISTÓRICO DE PRODUÇÃO DO DIA
+            </h2>
+
+            {
+                historico.length === 0 ? (
+                    /* Caso não existam registros */
+                    <p className="empty-history">
+                        Nenhum registro realizado ainda.
+                    </p>
+                ) : (
+                    /* Tabela com histórico de produção */
+                    <table className="historico-table">
+
+                        <thead>
+                            <tr>
+                                <th>Horário</th>
+                                <th>Kg Produzidos</th>
+                                <th>Kg Sobra</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {
+                                historico.map((item, index) => (
+                                    <tr key={index}>
+                                        <td>{item.horario}</td>
+                                        <td>{item.produzido}</td>
+                                        <td>{item.sobra}</td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+
+                    </table>
+                )
+            }
+
+        </section>
+
+        {/* ================= FOOTER ================= */}
+
+        <footer className="cook-footer">
+            Protótipo da página do cozinheiro desenvolvido pela equipe Try Catcher - Hackathon 2026
+        </footer>
+
+    </div>
+);
 }
 
 export default Cozinheiro;

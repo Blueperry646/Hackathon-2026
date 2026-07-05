@@ -10,8 +10,8 @@ function Login() {
     // Estados do formulário
     // ===========================
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [identificador, setIdentificador] = useState('');
+    const [senha, setSenha] = useState('');
 
     // ===========================
     // Navegação entre páginas
@@ -38,10 +38,10 @@ function Login() {
 
         try {
 
-            const response = await axios.post(
-                'http://localhost:5000/login',
-                { email, password }
-            );
+            const response = await axios.post('http://localhost:5000/login', {
+                identificador,  // ← mudou
+                senha           // ← mudou
+            });
 
             /*
                 ======================================
@@ -104,7 +104,12 @@ function Login() {
         }
     };
 
+    // Revisar
+    const user = response.data.user;
+    console.log(user.nome, user.perfil, user.escola);
+
     return (
+
 
         <div className="login-page">
 
