@@ -483,3 +483,36 @@
         padding: 6px 10px;
     }
 }
+
+/* Layout para os gráficos */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.chart-container {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e0e4e8;
+}
+
+.chart-container h3 {
+    font-size: 14px;
+    color: #0b5ea8;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.chart-full-width {
+    grid-column: 1 / -1;
+}
+
+.dashboard-card-custom {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid #e0e4e8;
+}
