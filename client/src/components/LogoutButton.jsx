@@ -35,7 +35,7 @@ function LogoutButton() {
             onMouseEnter={(e) => e.target.style.backgroundColor = '#c82333'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
         >
-            🚪 Sair
+            Sair
         </button>
     );
 }

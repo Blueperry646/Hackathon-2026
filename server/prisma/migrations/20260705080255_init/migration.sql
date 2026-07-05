@@ -164,3 +164,39 @@ ALTER TABLE `estoque` ADD CONSTRAINT `estoque_id_ingrediente_fkey` FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE `movimentacao_estoque` ADD CONSTRAINT `movimentacao_estoque_id_estoque_fkey` FOREIGN KEY (`id_estoque`) REFERENCES `estoque`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- 1. Inserindo uma Escola (necessária para os usuários)
+INSERT INTO `escola` (`nome`) VALUES ('Escola Municipal Padrão');
+
+-- 2. Inserindo 5 Usuários (Garantindo um de cada perfil)
+-- Senhas em texto simples para exemplo, em produção use hashes.
+INSERT INTO `usuario` (`nome`, `identificador`, `senha`, `perfil`, `id_escola`) VALUES 
+('Alice Administradora', 'admin.01', 'senha123', 'ADMIN', 1),
+('Bruno Contador', 'cont.01', 'senha123', 'CONTADOR', 1),
+('Carlos Cozinheiro', 'coz.01', 'senha123', 'COZINHEIRO', 1),
+('Daniela Cozinheira', 'coz.02', 'senha123', 'COZINHEIRO', 1),
+('Eduardo Contador', 'cont.02', 'senha123', 'CONTADOR', 1);
+
+-- 3. Inserindo 5 Ingredientes
+INSERT INTO `ingrediente` (`nome`, `unidade`) VALUES 
+('Arroz Branco', 'kg'),
+('Feijão Carioca', 'kg'),
+('Peito de Frango', 'kg'),
+('Óleo de Soja', 'Litro'),
+('Sal Refinado', 'kg');
+
+-- 4. Inserindo 3 Pratos
+INSERT INTO `prato` (`nome`) VALUES 
+('Arroz com Feijão Simples'),
+('Canja de Galinha'),
+('Frango Grelhado com Arroz');
+
+-- 5. Opcional: Vinculando Ingredientes aos Pratos (Tabela prato_ingrediente)
+-- Isso é necessário para que o sistema saiba o que compõe cada prato
+INSERT INTO `prato_ingrediente` (`id_prato`, `id_ingrediente`, `quantidade`) VALUES 
+(1, 1, 0.10), -- Arroz no 'Arroz com Feijão'
+(1, 2, 0.08), -- Feijão no 'Arroz com Feijão'
+(2, 3, 0.15), -- Frango na 'Canja'
+(2, 1, 0.05), -- Arroz na 'Canja'
+(3, 3, 0.20), -- Frango no 'Frango Grelhado'
+(3, 1, 0.10); -- Arroz no 'Frango Grelhado'

@@ -254,18 +254,20 @@ function Cozinheiro() {
     // FUNÇÃO: FORMATAR HORÁRIO
     // ===========================
 
-    function formatarHorario(data) {
-        if (!data) return '--:--';
-        try {
-            const date = new Date(data);
-            return date.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        } catch {
-            return data;
-        }
+function formatarHorario(valor) {
+    if (!valor) return '--:--';
+    
+    // Se já for uma string curta de hora, retorna direto
+    if (typeof valor === 'string' && valor.length === 5) return valor;
+
+    try {
+        const date = new Date(valor);
+        if (isNaN(date.getTime())) return valor;
+        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+    } catch {
+        return valor;
     }
+}
 
     // ===========================
     // RENDERIZAÇÃO: LOADING
