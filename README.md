@@ -228,3 +228,4 @@ npx prisma studio
 na pasta /Hackathon-2026/server
 após executar esse comando será levado à uma página web com um menu com todas as tabelas de nosso protótipo, clique na que deseja adicionar valores e, em seguida, clique em "Add record" na tool bar localizada no topo da página;
 insira os valores desejado e clique em "Save (X) change(s)".
+Para as funcionalidades do estoque funcionarem, cada ingrediente deve estar cadastrado, mesmo que com 0 unidades

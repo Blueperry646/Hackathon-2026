@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import LogoutButton from '../../components/LogoutButton';
 import "./style.css";
+import {
+    Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement, Filler
+} from 'chart.js';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
+
+ChartJS.register(
+    CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement, Filler
+);
 
 /**
  * Página do Administrador
@@ -108,11 +116,11 @@ function AdminPage() {
 
         // Verificar sessão do usuário
         const usuarioStr = localStorage.getItem('usuario');
-        
+
         if (!usuarioStr) {
-            setMensagem({ 
-                texto: 'Usuario nao esta logado! Redirecionando...', 
-                tipo: 'erro' 
+            setMensagem({
+                texto: 'Usuario nao esta logado! Redirecionando...',
+                tipo: 'erro'
             });
             setTimeout(() => {
                 window.location.href = '/';
@@ -124,7 +132,7 @@ function AdminPage() {
             const user = JSON.parse(usuarioStr);
             setUsuario(user);
             setNomeUsuario(user.nome || '');
-            
+
             if (user.escola) {
                 setEscola(user.escola);
             }
@@ -178,9 +186,9 @@ function AdminPage() {
 
                 } catch (error) {
                     console.error('Erro ao buscar dados:', error);
-                    setMensagem({ 
-                        texto: 'Erro ao carregar dados. Verifique se o backend esta rodando.', 
-                        tipo: 'erro' 
+                    setMensagem({
+                        texto: 'Erro ao carregar dados. Verifique se o backend esta rodando.',
+                        tipo: 'erro'
                     });
                 } finally {
                     setLoading(false);
@@ -191,9 +199,9 @@ function AdminPage() {
 
         } catch (error) {
             console.error('Erro ao processar usuario:', error);
-            setMensagem({ 
-                texto: 'Erro ao carregar dados do usuario.', 
-                tipo: 'erro' 
+            setMensagem({
+                texto: 'Erro ao carregar dados do usuario.',
+                tipo: 'erro'
             });
             setTimeout(() => {
                 window.location.href = '/';
@@ -211,7 +219,7 @@ function AdminPage() {
         const totalPratos = pratosList.length;
         const totalIngredientes = estoqueItems.length;
         const totalEstoque = estoqueItems.reduce((acc, item) => acc + Number(item.quantidade), 0);
-        
+
         setAnalises({
             totalRefeicoes,
             totalPratos,
@@ -249,7 +257,7 @@ function AdminPage() {
 
     async function criarCardapio(e) {
         e.preventDefault();
-        
+
         if (!formCardapio.turmaId || !formCardapio.pratoId || !formCardapio.dataRefeicao) {
             setMensagem({ texto: 'Preencha todos os campos obrigatorios.', tipo: 'erro' });
             return;
@@ -263,7 +271,7 @@ function AdminPage() {
             };
 
             await axios.post('http://localhost:5000/admin/cardapio', payload);
-            
+
             setMensagem({ texto: 'Cardapio criado com sucesso!', tipo: 'sucesso' });
             setFormCardapio({ dataRefeicao: '', horario: '', turmaId: '', pratoId: '', restricaoId: '' });
             listarCardapios();
@@ -303,7 +311,7 @@ function AdminPage() {
 
     async function criarPrato(e) {
         e.preventDefault();
-        
+
         if (!formPrato.nome || formPrato.ingredientes.length === 0) {
             setMensagem({ texto: 'Preencha o nome e adicione pelo menos um ingrediente.', tipo: 'erro' });
             return;
@@ -373,24 +381,37 @@ function AdminPage() {
         e.preventDefault();
 
         if (!formEstoque.ingredienteId || !formEstoque.quantidade) {
-            setMensagem({ texto: 'Preencha todos os campos obrigatorios.', tipo: 'erro' });
+            setMensagem({ texto: 'Preencha o ingrediente e a quantidade.', tipo: 'erro' });
+            return;
+        }
+
+        // TENTAMOS ENCONTRAR ESSE INGREDIENTE NO SEU ESTOQUE ATUAL
+        const itemNoEstoque = estoque.find(item =>
+            item.ingredienteId === parseInt(formEstoque.ingredienteId)
+        );
+
+        if (!itemNoEstoque) {
+            setMensagem({
+                texto: 'Este ingrediente ainda não foi inicializado no estoque da sua escola via Prisma Studio.',
+                tipo: 'erro'
+            });
             return;
         }
 
         try {
             await axios.post('http://localhost:5000/admin/estoque/movimentacao', {
-                estoqueId: parseInt(formEstoque.ingredienteId),
+                estoqueId: itemNoEstoque.id, // Enviamos o ID do estoque, não do ingrediente
                 tipo: formEstoque.tipoMovimentacao,
                 quantidade: parseFloat(formEstoque.quantidade)
             });
 
-            setMensagem({ texto: 'Movimentacao registrada com sucesso!', tipo: 'sucesso' });
+            setMensagem({ texto: 'Movimentação registrada com sucesso!', tipo: 'sucesso' });
             setFormEstoque({ ingredienteId: '', quantidade: '', tipoMovimentacao: 'ENTRADA' });
-            listarEstoque();
+            listarEstoque(); // Atualiza a tabela e os gráficos
 
         } catch (error) {
-            console.error('Erro ao registrar movimentacao:', error);
-            setMensagem({ texto: 'Erro ao registrar movimentacao.', tipo: 'erro' });
+            console.error('Erro ao registrar:', error);
+            setMensagem({ texto: 'Erro ao salvar. Verifique se o backend está rodando.', tipo: 'erro' });
         }
     }
 
@@ -398,13 +419,35 @@ function AdminPage() {
     // RENDERIZAÇÃO: LOADING
     // ===========================
 
+    // Dados para os Gráficos
+    const dadosEstoque = {
+        labels: estoque.map(i => i.ingrediente?.nome || 'Item'),
+        datasets: [{ label: 'Qtd em KG', data: estoque.map(i => i.quantidade), backgroundColor: '#0b5ea8' }]
+    };
+
+    const dadosPratos = {
+        labels: pratos.slice(0, 5).map(p => p.nome),
+        datasets: [{
+            data: pratos.slice(0, 5).map(p => cardapios.filter(c => c.pratoId === p.id).length),
+            backgroundColor: ['#0b5ea8', '#28a745', '#ffc107', '#dc3545', '#6c757d']
+        }]
+    };
+
+    const dadosComplexidade = {
+        labels: pratos.map(p => p.nome),
+        datasets: [{
+            fill: true, label: 'Nº de Ingredientes', data: pratos.map(p => p.ingredientes?.length || 0),
+            borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.1)', tension: 0.4
+        }]
+    };
+
     if (loading) {
         return (
             <div className="admin-page">
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     height: '100vh',
                     flexDirection: 'column'
                 }}>
@@ -436,28 +479,28 @@ function AdminPage() {
                         <h2>GERENCIAMENTO DE CARDAPIO</h2>
 
                         {mensagem.texto && mensagem.tipo === 'sucesso' && (
-                            <div style={{ 
-                                color: '#155724', 
-                                padding: '12px 16px', 
-                                background: '#d4edda', 
-                                borderRadius: '4px', 
-                                marginBottom: '15px' 
+                            <div style={{
+                                color: '#155724',
+                                padding: '12px 16px',
+                                background: '#d4edda',
+                                borderRadius: '4px',
+                                marginBottom: '15px'
                             }}>
                                 {mensagem.texto}
                             </div>
                         )}
 
-                        <div style={{ 
-                            background: '#f8fafc', 
-                            padding: '20px', 
+                        <div style={{
+                            background: '#f8fafc',
+                            padding: '20px',
                             borderRadius: '6px',
                             border: '1px solid #e0e4e8',
                             marginBottom: '20px'
                         }}>
                             <h3>Criar Novo Cardapio</h3>
-                            <form onSubmit={criarCardapio} style={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: '1fr 1fr', 
+                            <form onSubmit={criarCardapio} style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
                                 gap: '15px',
                                 marginTop: '15px'
                             }}>
@@ -523,11 +566,11 @@ function AdminPage() {
                                     </select>
                                 </div>
                                 <div style={{ gridColumn: '1 / -1' }}>
-                                    <button type="submit" style={{ 
-                                        padding: '10px 20px', 
-                                        background: '#0b5ea8', 
-                                        color: 'white', 
-                                        border: 'none', 
+                                    <button type="submit" style={{
+                                        padding: '10px 20px',
+                                        background: '#0b5ea8',
+                                        color: 'white',
+                                        border: 'none',
                                         borderRadius: '4px',
                                         cursor: 'pointer',
                                         fontWeight: '600'
@@ -563,13 +606,13 @@ function AdminPage() {
                                                 <td>{c.turma?.nome || 'N/A'}</td>
                                                 <td>{c.prato?.nome || 'N/A'}</td>
                                                 <td>
-                                                    <button 
+                                                    <button
                                                         onClick={() => excluirCardapio(c.id)}
-                                                        style={{ 
-                                                            padding: '4px 12px', 
-                                                            background: '#dc3545', 
-                                                            color: 'white', 
-                                                            border: 'none', 
+                                                        style={{
+                                                            padding: '4px 12px',
+                                                            background: '#dc3545',
+                                                            color: 'white',
+                                                            border: 'none',
                                                             borderRadius: '4px',
                                                             cursor: 'pointer'
                                                         }}
@@ -596,12 +639,12 @@ function AdminPage() {
                         <h2>GERENCIAMENTO DE PRATOS</h2>
 
                         {mensagem.texto && mensagem.tipo === 'sucesso' && (
-                            <div style={{ 
-                                color: '#155724', 
-                                padding: '12px 16px', 
-                                background: '#d4edda', 
-                                borderRadius: '4px', 
-                                marginBottom: '15px' 
+                            <div style={{
+                                color: '#155724',
+                                padding: '12px 16px',
+                                background: '#d4edda',
+                                borderRadius: '4px',
+                                marginBottom: '15px'
                             }}>
                                 {mensagem.texto}
                             </div>
@@ -738,7 +781,7 @@ function AdminPage() {
                                                 <td>{p.nome}</td>
                                                 <td>
                                                     {p.ingredientes && p.ingredientes.length > 0 ? (
-                                                        p.ingredientes.map(pi => 
+                                                        p.ingredientes.map(pi =>
                                                             `${pi.ingrediente?.nome || 'N/A'} (${pi.quantidade}kg)`
                                                         ).join(', ')
                                                     ) : (
@@ -778,79 +821,36 @@ function AdminPage() {
                     <div className="content-box">
                         <h2>ANALISE DE DADOS</h2>
 
-                        <div style={{ 
-                            display: 'grid', 
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
-                            gap: '20px',
-                            marginBottom: '30px'
-                        }}>
-                            <div style={{ 
-                                background: '#f8fafc', 
-                                padding: '20px', 
-                                borderRadius: '6px',
-                                textAlign: 'center',
-                                border: '1px solid #e0e4e8'
-                            }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#0b5ea8' }}>
-                                    {analises.totalRefeicoes || 0}
-                                </div>
+                        {/* Seus cards originais de análise aqui */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+                            <div className="dashboard-card-custom">
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#0b5ea8' }}>{analises.totalRefeicoes}</div>
                                 <div style={{ color: '#666', fontSize: '14px' }}>Total de Refeicoes</div>
                             </div>
-
-                            <div style={{ 
-                                background: '#f8fafc', 
-                                padding: '20px', 
-                                borderRadius: '6px',
-                                textAlign: 'center',
-                                border: '1px solid #e0e4e8'
-                            }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#28a745' }}>
-                                    {analises.totalPratos || 0}
-                                </div>
+                            <div className="dashboard-card-custom">
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#28a745' }}>{analises.totalPratos}</div>
                                 <div style={{ color: '#666', fontSize: '14px' }}>Pratos Cadastrados</div>
                             </div>
-
-                            <div style={{ 
-                                background: '#f8fafc', 
-                                padding: '20px', 
-                                borderRadius: '6px',
-                                textAlign: 'center',
-                                border: '1px solid #e0e4e8'
-                            }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#ffc107' }}>
-                                    {analises.totalIngredientes || 0}
-                                </div>
-                                <div style={{ color: '#666', fontSize: '14px' }}>Ingredientes em Estoque</div>
-                            </div>
-
-                            <div style={{ 
-                                background: '#f8fafc', 
-                                padding: '20px', 
-                                borderRadius: '6px',
-                                textAlign: 'center',
-                                border: '1px solid #e0e4e8'
-                            }}>
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#dc3545' }}>
-                                    {analises.totalEstoque || 0}kg
-                                </div>
+                            <div className="dashboard-card-custom">
+                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#dc3545' }}>{analises.totalEstoque}kg</div>
                                 <div style={{ color: '#666', fontSize: '14px' }}>Total em Estoque</div>
                             </div>
                         </div>
 
-                        <div style={{ 
-                            background: '#f8fafc', 
-                            padding: '20px', 
-                            borderRadius: '6px',
-                            border: '1px solid #e0e4e8'
-                        }}>
-                            <h3>Funcionalidades em Desenvolvimento:</h3>
-                            <ul>
-                                <li>Graficos de refeicoes previstas vs realizadas</li>
-                                <li>Analise de desperdicio diario</li>
-                                <li>Ranking de pratos mais populares</li>
-                                <li>Filtros por turma e data</li>
-                                <li>Relatorios mensais</li>
-                            </ul>
+                        {/* --- NOVA ÁREA DE GRÁFICOS --- */}
+                        <div className="charts-grid">
+                            <div className="chart-container">
+                                <h3>Níveis de Estoque (KG)</h3>
+                                <div style={{ height: '250px' }}><Bar data={dadosEstoque} options={{ maintainAspectRatio: false }} /></div>
+                            </div>
+                            <div className="chart-container">
+                                <h3>Frequência de Pratos no Cardápio</h3>
+                                <div style={{ height: '250px' }}><Doughnut data={dadosPratos} options={{ maintainAspectRatio: false }} /></div>
+                            </div>
+                            <div className="chart-container chart-full-width">
+                                <h3>Complexidade (Ingredientes por Prato)</h3>
+                                <div style={{ height: '200px' }}><Line data={dadosComplexidade} options={{ maintainAspectRatio: false }} /></div>
+                            </div>
                         </div>
                     </div>
                 );
@@ -865,28 +865,28 @@ function AdminPage() {
                         <h2>GESTAO DE ESTOQUE</h2>
 
                         {mensagem.texto && mensagem.tipo === 'sucesso' && (
-                            <div style={{ 
-                                color: '#155724', 
-                                padding: '12px 16px', 
-                                background: '#d4edda', 
-                                borderRadius: '4px', 
-                                marginBottom: '15px' 
+                            <div style={{
+                                color: '#155724',
+                                padding: '12px 16px',
+                                background: '#d4edda',
+                                borderRadius: '4px',
+                                marginBottom: '15px'
                             }}>
                                 {mensagem.texto}
                             </div>
                         )}
 
-                        <div style={{ 
-                            background: '#f8fafc', 
-                            padding: '20px', 
+                        <div style={{
+                            background: '#f8fafc',
+                            padding: '20px',
                             borderRadius: '6px',
                             border: '1px solid #e0e4e8',
                             marginBottom: '20px'
                         }}>
                             <h3>Registrar Movimentacao</h3>
-                            <form onSubmit={registrarMovimentacao} style={{ 
-                                display: 'grid', 
-                                gridTemplateColumns: '1fr 1fr 1fr', 
+                            <form onSubmit={registrarMovimentacao} style={{
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr 1fr',
                                 gap: '15px',
                                 marginTop: '15px'
                             }}>
@@ -898,9 +898,12 @@ function AdminPage() {
                                         style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
                                         required
                                     >
-                                        <option value="">Selecione</option>
-                                        {ingredientes.map(i => (
-                                            <option key={i.id} value={i.id}>{i.nome}</option>
+                                        <option value="">Selecione o ingrediente</option>
+                                        {/* Usamos 'ingredientes' para o menu não ficar vazio */}
+                                        {ingredientes.map(ing => (
+                                            <option key={ing.id} value={ing.id}>
+                                                {ing.nome}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
@@ -928,11 +931,11 @@ function AdminPage() {
                                     />
                                 </div>
                                 <div style={{ gridColumn: '1 / -1' }}>
-                                    <button type="submit" style={{ 
-                                        padding: '10px 20px', 
-                                        background: '#28a745', 
-                                        color: 'white', 
-                                        border: 'none', 
+                                    <button type="submit" style={{
+                                        padding: '10px 20px',
+                                        background: '#28a745',
+                                        color: 'white',
+                                        border: 'none',
                                         borderRadius: '4px',
                                         cursor: 'pointer',
                                         fontWeight: '600'
