@@ -1,65 +1,52 @@
-/**
- * PÁGINA DO COZINHEIRO
- * 
- * Esta página é o painel de controle diário do cozinheiro.
- * 
- * O que ela faz:
- * 1. Mostra o que precisa ser preparado hoje (cardápio).
- * 2. Permite conferir os ingredientes necessários para cada prato.
- * 3. Oferece um formulário para registrar quanto foi produzido e quanto sobrou.
- * 4. Mostra o histórico de tudo que já foi registrado no dia.
- */
-
 import { useEffect, useState } from "react";
 import axios from 'axios';
 import "./style.css";
 import LogoutButton from '../../components/LogoutButton';
 
-/*
-===============================================================================
-CONFIGURAÇÕES E IMPORTAÇÕES
-===============================================================================
-Aqui carregamos as ferramentas (bibliotecas) necessárias:
-- useState: Gerencia informações que mudam na tela (como dados do formulário).
-- useEffect: Faz a página realizar ações automaticamente ao abrir.
-- axios: Conecta nosso site com o banco de dados (o servidor).
-- LogoutButton: Botão que desconecta o usuário.
-===============================================================================
-*/
+/**
+ * Página do Cozinheiro
+ * 
+ * Funcionalidades:
+ * - Visualizar refeições programadas para o dia
+ * - Ver ingredientes de cada prato
+ * - Registrar produção (horário, kg produzido, kg sobra)
+ * - Visualizar histórico de produção do dia
+ */
 
 function Cozinheiro() {
+    // ===========================
+    // ESTADOS DO COMPONENTE
+    // ===========================
 
-    // --- ESTADOS (O que a página "lembra" ou armazena) ---
-    
-    // Dados da escola e tempo
+    // Dados da escola e data
     const [escola, setEscola] = useState("");
     const [dataAtual, setDataAtual] = useState("");
 
-    // Controle do cardápio
+    // Refeições e ingredientes
     const [refeicoes, setRefeicoes] = useState([]);
     const [mostrarIngredientes, setMostrarIngredientes] = useState(false);
 
-    // Dados que o cozinheiro vai preencher no formulário
+    // Formulário de produção
     const [horaPreparo, setHoraPreparo] = useState("");
     const [kgProduzido, setKgProduzido] = useState("");
     const [kgSobra, setKgSobra] = useState("");
-    const [salvando, setSalvando] = useState(false); // Bloqueia o botão enquanto salva
+    const [salvando, setSalvando] = useState(false);
 
-    // Histórico e controle de carregamento
+    // Histórico
     const [historico, setHistorico] = useState([]);
-    const [loading, setLoading] = useState(true); // Indica se estamos buscando dados no banco
+    const [loading, setLoading] = useState(true);
 
-    // Mensagens de aviso para o usuário
+    // Mensagens de feedback
     const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
-    // =========================================================================
+    // ===========================
     // CARREGAMENTO INICIAL
-    // Quando a página abre, ela faz estas tarefas automaticamente:
-    // 1. Pega a data de hoje.
-    // 2. Verifica se o usuário está logado (se não, manda para a tela inicial).
-    // 3. Busca o cardápio e o histórico de produção no servidor.
-    // =========================================================================
+    // ===========================
+
     useEffect(() => {
+        // ============================================
+        // 1. FORMATAR DATA ATUAL
+        // ============================================
         const hoje = new Date();
         setDataAtual(
             hoje.toLocaleDateString("pt-BR", {
@@ -70,80 +57,153 @@ function Cozinheiro() {
             })
         );
 
+        // ============================================
+        // 2. VERIFICAR SESSÃO DO USUÁRIO
+        // ============================================
         const usuarioStr = localStorage.getItem('usuario');
 
         if (!usuarioStr) {
-            setMensagem({ texto: 'Usuário não está logado! Redirecionando...', tipo: 'erro' });
-            setTimeout(() => { window.location.href = '/'; }, 2000);
+            setMensagem({
+                texto: 'Usuário não está logado! Redirecionando...',
+                tipo: 'erro'
+            });
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
             return;
         }
 
         try {
             const usuario = JSON.parse(usuarioStr);
+
             if (!usuario || !usuario.id) {
-                setMensagem({ texto: 'Sessão inválida! Redirecionando...', tipo: 'erro' });
-                setTimeout(() => { window.location.href = '/'; }, 2000);
+                setMensagem({
+                    texto: 'Sessão inválida! Redirecionando...',
+                    tipo: 'erro'
+                });
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
                 return;
             }
 
+            // ============================================
+            // 3. BUSCAR DADOS DO BACKEND
+            // ============================================
             const buscarDados = async () => {
                 try {
                     setLoading(true);
-                    if (usuario.escola) setEscola(usuario.escola);
+                    setMensagem({ texto: '', tipo: '' });
 
+                    // Buscar nome da escola
+                    if (usuario.escola) {
+                        setEscola(usuario.escola);
+                    }
+
+                    // Buscar cardápio do dia (usando o escolaId do usuário)
                     const escolaId = usuario.escolaId || 1;
-                    
-                    // Busca o cardápio do dia
-                    const cardapioRes = await axios.get(`http://localhost:5000/cozinheiro/cardapio/dia?escolaId=${escolaId}`);
+                    const cardapioRes = await axios.get(
+                        `http://localhost:5000/cozinheiro/cardapio/dia?escolaId=${escolaId}`
+                    );
                     setRefeicoes(cardapioRes.data);
 
-                    // Busca o histórico do dia
-                    const historicoRes = await axios.get(`http://localhost:5000/cozinheiro/historico?usuarioId=${usuario.id}`);
+                    // Buscar histórico de produção do dia
+                    const historicoRes = await axios.get(
+                        `http://localhost:5000/cozinheiro/historico?usuarioId=${usuario.id}`
+                    );
                     setHistorico(historicoRes.data);
 
                     if (cardapioRes.data.length === 0) {
-                        setMensagem({ texto: 'Nenhuma refeição programada para hoje.', tipo: 'info' });
+                        setMensagem({
+                            texto: 'Nenhuma refeição programada para hoje.',
+                            tipo: 'info'
+                        });
                     }
+
                 } catch (error) {
-                    setMensagem({ texto: 'Erro ao carregar dados. Verifique se o servidor está rodando.', tipo: 'erro' });
+                    console.error('Erro ao buscar dados:', error);
+                    setMensagem({
+                        texto: 'Erro ao carregar dados. Verifique se o backend está rodando.',
+                        tipo: 'erro'
+                    });
                 } finally {
                     setLoading(false);
                 }
             };
 
             buscarDados();
+
         } catch (error) {
-            setMensagem({ texto: 'Erro ao carregar dados do usuário.', tipo: 'erro' });
-            setTimeout(() => { window.location.href = '/'; }, 2000);
+            console.error('Erro ao processar usuário:', error);
+            setMensagem({
+                texto: 'Erro ao carregar dados do usuário.',
+                tipo: 'erro'
+            });
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 2000);
         }
+
     }, []);
 
-    // =========================================================================
-    // LIMPEZA DE MENSAGENS
-    // Remove qualquer aviso na tela após 5 segundos para não poluir o visual.
-    // =========================================================================
+    // ===========================
+    // LIMPAR MENSAGEM APÓS 5 SEGUNDOS
+    // ===========================
+
     useEffect(() => {
         if (mensagem.texto) {
-            const timer = setTimeout(() => { setMensagem({ texto: '', tipo: '' }); }, 5000);
+            const timer = setTimeout(() => {
+                setMensagem({ texto: '', tipo: '' });
+            }, 5000);
             return () => clearTimeout(timer);
         }
     }, [mensagem]);
 
-    // =========================================================================
-    // SALVAR PRODUÇÃO
-    // Valida os campos preenchidos e envia para o servidor salvar.
-    // =========================================================================
-    async function salvarRegistro() {
-        const usuarioStr = localStorage.getItem('usuario');
-        const usuario = JSON.parse(usuarioStr);
+    // ===========================
+    // FUNÇÃO: SALVAR REGISTRO DE PRODUÇÃO
+    // ===========================
 
-        // Verificações de segurança antes de enviar
-        if (!horaPreparo || !kgProduzido || parseFloat(kgProduzido) <= 0) {
-            setMensagem({ texto: 'Por favor, preencha o horário e a quantidade produzida corretamente.', tipo: 'erro' });
+    async function salvarRegistro() {
+        // ============================================
+        // 1. VALIDAÇÕES
+        // ============================================
+
+        const usuarioStr = localStorage.getItem('usuario');
+
+        if (!usuarioStr) {
+            setMensagem({ texto: 'Usuário não está logado!', tipo: 'erro' });
             return;
         }
 
+        const usuario = JSON.parse(usuarioStr);
+
+        if (!usuario || !usuario.id) {
+            setMensagem({ texto: 'Sessão inválida!', tipo: 'erro' });
+            return;
+        }
+
+        if (!refeicoes || refeicoes.length === 0) {
+            setMensagem({ texto: 'Não há refeições programadas para hoje!', tipo: 'erro' });
+            return;
+        }
+
+        if (!horaPreparo) {
+            setMensagem({ texto: 'Por favor, selecione o horário de preparo.', tipo: 'erro' });
+            return;
+        }
+
+        if (!kgProduzido || parseFloat(kgProduzido) <= 0) {
+            setMensagem({ texto: 'Por favor, informe a quantidade produzida (kg).', tipo: 'erro' });
+            return;
+        }
+
+        // ============================================
+        // 2. ENVIAR DADOS PARA O BACKEND
+        // ============================================
+
         setSalvando(true);
+        setMensagem({ texto: 'Salvando produção...', tipo: 'info' });
+
         try {
             const response = await axios.post('http://localhost:5000/cozinheiro/producao', {
                 cardapioId: refeicoes[0]?.id,
@@ -154,125 +214,293 @@ function Cozinheiro() {
             });
 
             if (response.status === 201) {
-                setMensagem({ texto: 'Produção registrada com sucesso!', tipo: 'sucesso' });
+                setMensagem({
+                    texto: 'Produção registrada com sucesso!',
+                    tipo: 'sucesso'
+                });
+
+                // Limpar campos do formulário
                 setHoraPreparo('');
                 setKgProduzido('');
                 setKgSobra('');
-                
-                // Atualiza o histórico para mostrar o novo registro
-                const historicoRes = await axios.get(`http://localhost:5000/cozinheiro/historico?usuarioId=${usuario.id}`);
+
+                // Recarregar histórico
+                const historicoRes = await axios.get(
+                    `http://localhost:5000/cozinheiro/historico?usuarioId=${usuario.id}`
+                );
                 setHistorico(historicoRes.data);
             }
+
         } catch (error) {
-            setMensagem({ texto: 'Erro ao salvar. Tente novamente.', tipo: 'erro' });
+            console.error('Erro ao registrar produção:', error);
+
+            let mensagemErro = 'Erro ao registrar produção. ';
+
+            if (error.response) {
+                mensagemErro += error.response.data?.error || 'Tente novamente.';
+            } else if (error.request) {
+                mensagemErro += 'Verifique se o backend está rodando.';
+            } else {
+                mensagemErro += 'Tente novamente mais tarde.';
+            }
+
+            setMensagem({ texto: `${mensagemErro}`, tipo: 'erro' });
         } finally {
             setSalvando(false);
         }
     }
 
-    // =========================================================================
-    // FORMATAR HORÁRIO
-    // Transforma dados de data/hora vindos do computador em um formato fácil de ler.
-    // =========================================================================
-    function formatarHorario(valor) {
-        if (!valor) return '--:--';
-        if (typeof valor === 'string' && valor.length === 5) return valor;
-        try {
-            const date = new Date(valor);
-            return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-        } catch { return valor; }
-    }
+    // ===========================
+    // FUNÇÃO: FORMATAR HORÁRIO
+    // ===========================
 
-    // Se estiver carregando, mostra apenas uma tela simples de espera
+function formatarHorario(valor) {
+    if (!valor) return '--:--';
+    
+    // Se já for uma string curta de hora, retorna direto
+    if (typeof valor === 'string' && valor.length === 5) return valor;
+
+    try {
+        const date = new Date(valor);
+        if (isNaN(date.getTime())) return valor;
+        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+    } catch {
+        return valor;
+    }
+}
+
+    // ===========================
+    // RENDERIZAÇÃO: LOADING
+    // ===========================
+
     if (loading) {
-        return <div className="cook-page"><div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column' }}><h3>Carregando...</h3></div></div>;
+        return (
+            <div className="cook-page">
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    height: '100vh',
+                    flexDirection: 'column'
+                }}>
+                    <div style={{ fontSize: '24px', marginBottom: '20px' }}>
+                        Carregando...
+                    </div>
+                    <div style={{ color: '#666' }}>
+                        Preparando os dados da cozinha
+                    </div>
+                </div>
+            </div>
+        );
     }
 
-    // RENDERIZAÇÃO DA PÁGINA (O que o usuário vê)
+    // ===========================
+    // RENDERIZAÇÃO PRINCIPAL
+    // ===========================
+
     return (
         <div className="cook-page">
+            {/* ================= HEADER ================= */}
             <header className="cook-header">
-                <div className="header-left"><h1>{escola === "" ? "ESCOLA MUNICIPAL" : escola}</h1></div>
+                <div className="header-left">
+                    <h1>{escola === "" ? "ESCOLA MUNICIPAL" : escola}</h1>
+                </div>
                 <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <h2>{dataAtual}</h2>
-                    <LogoutButton />
+                    <LogoutButton /> {/* ← ADICIONAR */}
                 </div>
             </header>
 
-            {/* Exibe avisos se houver */}
+            {/* ================= MENSAGENS DE FEEDBACK ================= */}
             {mensagem.texto && (
-                <div style={{ padding: '12px', margin: '10px auto', textAlign: 'center', fontWeight: 'bold' }}>
+                <div style={{
+                    padding: '12px 20px',
+                    margin: '10px auto',
+                    maxWidth: '1200px',
+                    borderRadius: '4px',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    backgroundColor:
+                        mensagem.tipo === 'sucesso' ? '#d4edda' :
+                            mensagem.tipo === 'erro' ? '#f8d7da' :
+                                mensagem.tipo === 'info' ? '#d1ecf1' : '#f8f9fa',
+                    color:
+                        mensagem.tipo === 'sucesso' ? '#155724' :
+                            mensagem.tipo === 'erro' ? '#721c24' :
+                                mensagem.tipo === 'info' ? '#0c5460' : '#383d41',
+                    border: '1px solid',
+                    borderColor:
+                        mensagem.tipo === 'sucesso' ? '#c3e6cb' :
+                            mensagem.tipo === 'erro' ? '#f5c6cb' :
+                                mensagem.tipo === 'info' ? '#bee5eb' : '#d6d8db'
+                }}>
                     {mensagem.texto}
                 </div>
             )}
 
+            {/* ================= CORPO PRINCIPAL ================= */}
             <main className="cook-main">
-                {/* Painel de Refeições */}
+
+                {/* ================= PAINEL ESQUERDO: REFEIÇÕES ================= */}
                 <section className="left-panel">
                     <h2 className="panel-title">REFEIÇÕES PROGRAMADAS</h2>
-                    {refeicoes.map((refeicao) => (
-                        <div className="meal-card" key={refeicao.id}>
-                            <h3>{formatarHorario(refeicao.horario)}</h3>
-                            <p><strong>Prato:</strong> {refeicao.prato}</p>
-                            <p><strong>Porções:</strong> {refeicao.porcoes}</p>
+
+                    {refeicoes.length === 0 ? (
+                        <div className="meal-card empty-card">
+                            <h3>Nenhuma refeição programada</h3>
+                            <p>As refeições cadastradas para hoje aparecerão aqui.</p>
                         </div>
-                    ))}
+                    ) : (
+                        refeicoes.map((refeicao) => (
+                            <div className="meal-card" key={refeicao.id}>
+                                <div className="meal-header">
+                                    <h3>{formatarHorario(refeicao.horario)}</h3>
+                                </div>
+                                <div className="meal-info">
+                                    <p><strong>Prato:</strong> {refeicao.prato}</p>
+                                    <p><strong>Porções:</strong> {refeicao.porcoes}</p>
+                                    <p><strong>Especiais:</strong> {refeicao.especiais || 'Nenhum'}</p>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </section>
 
-                {/* Painel de Ingredientes e Registro */}
+                {/* ================= PAINEL DIREITO: INGREDIENTES + FORMULÁRIO ================= */}
                 <aside className="right-panel">
-                    <button className="ingredientes-button" onClick={() => setMostrarIngredientes(!mostrarIngredientes)}>
-                        {mostrarIngredientes ? '🔽 OCULTAR INGREDIENTES' : '🔼 EXIBIR INGREDIENTES'}
+
+                    {/* Botão de Ingredientes */}
+                    <button
+                        className="ingredientes-button"
+                        onClick={() => setMostrarIngredientes(!mostrarIngredientes)}
+                    >
+                        {mostrarIngredientes ? '🔽 OCULTAR PRATOS E INGREDIENTES' : '🔼 EXIBIR PRATOS E INGREDIENTES'}
                     </button>
 
+                    {/* Lista de Ingredientes */}
                     {mostrarIngredientes && (
                         <div className="ingredientes-box">
-                            {refeicoes.map((refeicao) => (
-                                <div key={refeicao.id}>
-                                    <h3>{refeicao.prato}</h3>
-                                    <ul>{refeicao.ingredientes?.map((ing, i) => <li key={i}>{ing.nome} ({ing.quantidade} kg)</li>)}</ul>
-                                </div>
-                            ))}
+                            {refeicoes.length === 0 ? (
+                                <div className="sem-pratos">Nenhum prato cadastrado.</div>
+                            ) : (
+                                refeicoes.map((refeicao) => (
+                                    <div key={refeicao.id} className="prato-box">
+                                        <h3>{refeicao.prato}</h3>
+                                        <ul>
+                                            {refeicao.ingredientes && refeicao.ingredientes.length > 0 ? (
+                                                refeicao.ingredientes.map((ingrediente, index) => (
+                                                    <li key={index}>
+                                                        {ingrediente.nome}
+                                                        {ingrediente.quantidade && ` (${ingrediente.quantidade} kg)`}
+                                                    </li>
+                                                ))
+                                            ) : (
+                                                <li style={{ color: '#999' }}>Sem ingredientes cadastrados</li>
+                                            )}
+                                        </ul>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     )}
 
+                    {/* ================= FORMULÁRIO DE PRODUÇÃO ================= */}
                     <div className="form-section">
                         <h2 className="panel-title">REGISTRAR PRODUÇÃO</h2>
                         <div className="form-box">
-                            <label>Horário de preparo</label>
-                            <input type="time" value={horaPreparo} onChange={(e) => setHoraPreparo(e.target.value)} disabled={salvando} />
-                            
-                            <label>Kg produzidos</label>
-                            <input type="number" step="0.01" value={kgProduzido} onChange={(e) => setKgProduzido(e.target.value)} disabled={salvando} />
-                            
-                            <label>Kg sobra (opcional)</label>
-                            <input type="number" step="0.01" value={kgSobra} onChange={(e) => setKgSobra(e.target.value)} disabled={salvando} />
 
-                            <button className="save-button" onClick={salvarRegistro} disabled={salvando}>
+                            <label htmlFor="horaPreparo">Horário de preparo</label>
+                            <input
+                                id="horaPreparo"
+                                type="time"
+                                value={horaPreparo}
+                                onChange={(e) => setHoraPreparo(e.target.value)}
+                                disabled={salvando}
+                            />
+
+                            <label htmlFor="kgProduzido">Kg produzidos</label>
+                            <input
+                                id="kgProduzido"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Ex: 10.50"
+                                value={kgProduzido}
+                                onChange={(e) => setKgProduzido(e.target.value)}
+                                disabled={salvando}
+                            />
+
+                            <label htmlFor="kgSobra">Kg sobrou (opcional)</label>
+                            <input
+                                id="kgSobra"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Ex: 2.30"
+                                value={kgSobra}
+                                onChange={(e) => setKgSobra(e.target.value)}
+                                disabled={salvando}
+                            />
+
+                            <button
+                                className="save-button"
+                                onClick={salvarRegistro}
+                                disabled={salvando}
+                                style={{
+                                    opacity: salvando ? 0.7 : 1,
+                                    cursor: salvando ? 'not-allowed' : 'pointer'
+                                }}
+                            >
                                 {salvando ? '⏳ SALVANDO...' : 'SALVAR'}
                             </button>
+
                         </div>
                     </div>
+
                 </aside>
+
             </main>
 
-            {/* Histórico */}
+            {/* ================= HISTÓRICO ================= */}
             <section className="historico-section">
                 <h2>HISTÓRICO DE PRODUÇÃO DO DIA</h2>
-                <table className="historico-table">
-                    <thead><tr><th>Horário</th><th>Prato</th><th>Kg Produzidos</th><th>Kg Sobra</th></tr></thead>
-                    <tbody>
-                        {historico.map((item, index) => (
-                            <tr key={index}>
-                                <td>{formatarHorario(item.horaPreparo)}</td>
-                                <td>{item.cardapio?.prato?.nome || 'N/A'}</td>
-                                <td>{item.kgProduzido?.toFixed(2)}</td>
-                                <td>{item.kgSobra?.toFixed(2)}</td>
+
+                {historico.length === 0 ? (
+                    <p className="empty-history">
+                        Nenhum registro realizado ainda.
+                        <br />
+                        <span style={{ fontSize: '14px', color: '#999' }}>
+                            Comece registrando uma produção acima.
+                        </span>
+                    </p>
+                ) : (
+                    <table className="historico-table">
+                        <thead>
+                            <tr>
+                                <th>Horário</th>
+                                <th>Prato</th>
+                                <th>Kg Produzidos</th>
+                                <th>Kg Sobra</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {historico.map((item, index) => (
+                                <tr key={index}>
+                                    <td>{formatarHorario(item.horaPreparo)}</td>
+                                    <td>{item.cardapio?.prato?.nome || 'N/A'}</td>
+                                    <td>{item.kgProduzido ? item.kgProduzido.toFixed(2) : '0.00'}</td>
+                                    <td>{item.kgSobra ? item.kgSobra.toFixed(2) : '0.00'}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </section>
+
+            {/* ================= FOOTER ================= */}
+            <footer className="cook-footer">
+                Protótipo da página do cozinheiro desenvolvido pela equipe Try Catcher - Hackathon 2026
+            </footer>
         </div>
     );
 }

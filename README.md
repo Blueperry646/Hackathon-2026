@@ -1,129 +1,231 @@
-Projeto TIAMARI - Hackathon 2026
+HACKATHON-2026
+Guia de Instalação e Utilização do projeto TIAMARI
 
-Sistema inteligente de gestão escolar voltado para a operação de cozinhas,
-otimizando o fluxo entre o planejamento administrativo, a contagem de refeições
-e a produção culinária.
+======================================================================
+1. REQUISITOS
+======================================================================
 
-Requisitos
+Antes de iniciar a instalação do projeto, certifique-se de possuir os seguintes programas instalados em seu computador:
 
-Antes de começar, certifique-se de ter instalado:
-
-  - Git
-  - Node.js (v18+ recomendado)
-  - MySQL Server
+* Git
+* Node.js (inclui o gerenciador de pacotes npm)
+* MySQL Server
 
 Downloads:
 
-  - Git: https://git-scm.com/downloads
-  - Node.js: https://nodejs.org/en/download/current
+Git:
+https://git-scm.com/downloads
 
-Instalação
+Node.js:
+https://nodejs.org/en/download/current
 
-1.  Clone o repositório:
+Também é recomendado utilizar o MySQL Workbench para facilitar a criação e gerenciamento do banco de dados.
 
-    Abra o terminal e execute os seguintes comandos nesta ordem, um após o outro:
+======================================================================
+2. CLONANDO O PROJETO
+======================================================================
 
-    git clone https://github.com/Blueperry646/Hackathon-2026.git
-    cd Hackathon-2026
+Após instalar o Git, abra um terminal e execute o comando:
 
-2.  Configuração do Servidor (Backend):
+git clone https://github.com/Blueperry646/Hackathon-2026.git
 
-    Entre na pasta server usando:
+Esse comando fará o download de todo o projeto para seu computador, criando uma pasta chamada "Hackathon-2026".
 
-    cd server
+Entre nessa pasta utilizando:
 
-    A seguir execute os seguintes comandos nesta ordem, um após o outro:
+cd Hackathon-2026
 
-    npm i
-    npx prisma generate
+Dentro dela existirão duas subpastas:
 
-    Estes comandos gerarão automáticamente os arquivos necessários para que o Prisma consiga realizar a comunicação entre a aplicação e o banco de dados.
+client
+server
 
-3.  Configuração do Banco de Dados:
+A pasta "server" contém o servidor e toda a lógica do sistema.
+A pasta "client" contém a interface do website.
 
-      - Crie um arquivo .env dentro da pasta server e copie e cole dentro dele as seguintes linhas:
+======================================================================
+3. CONFIGURANDO O SERVIDOR
+======================================================================
 
-    DATABASE_URL="mysql://username:password@localhost:3306/mydb" 
-    DATABASE_USER="username" 
-    DATABASE_PASSWORD="password" 
-    DATABASE_NAME="mydb" 
-    DATABASE_HOST="localhost" 
-    DATABASE_PORT=3306
+Entre na pasta "server":
 
-      - Substitua:
+cd server
 
-    username -> nome do usuário do MySQL.
-    password -> senha do usuário do MySQL.
-    mydb -> nome do banco desejado.
+Agora instale todas as dependências do projeto executando:
 
-      - Aplique as tabelas no banco:
+npm i
 
-    npx prisma migrate deploy
+Esse comando fará o download de todas as bibliotecas necessárias para o funcionamento do servidor. Ao final da instalação será criada uma pasta chamada "node_modules".
 
-    Estes comandos criaram automaticamente todas as tabelas necessárias para o funcionamento do sistema dentro do banco de dados informado.
+Em seguida execute:
 
-    Quando esse processo terminar, o servidor estará completamente configurado.
+npx prisma generate
 
-      - Inicie o servidor:
+Esse comando gera automaticamente os arquivos necessários para que o Prisma consiga realizar a comunicação entre a aplicação e o banco de dados.
 
-    Para iniciar o backend execute:
+======================================================================
+4. CONFIGURANDO O BANCO DE DADOS
+======================================================================
 
-    node index.js
+Agora, dentro da pasta:
 
-    O servidor ficará em execução aguardando conexões.
+Hackathon-2026/server
 
-    **IMPORTANTE:** Mantenha essa janela do terminal aberta durante todo o tempo em que estiver utilizando o website.
+crie um arquivo chamado:
 
-4.  Configuração do Cliente (Frontend):
+.env
 
-    Volte para a pasta principal do projeto:
+Dentro desse arquivo escreva:
 
-    cd ..
+DATABASE_URL="mysql://username:password@localhost:3306/mydb"
+DATABASE_USER="username"
+DATABASE_PASSWORD="password"
+DATABASE_NAME="mydb"
+DATABASE_HOST="localhost"
+DATABASE_PORT=3306
 
-    Agora entre na pasta do cliente:
+Substitua:
 
-    cd client
+username -> nome do usuário do MySQL.
 
-    Instale as dependências executando:
+password -> senha do usuário do MySQL.
 
-    npm i
+mydb -> nome do banco desejado.
 
-    Esse comando instalará todas as bibliotecas necessárias para executar a interface do sistema.
+Essas informações serão utilizadas pelo servidor para estabelecer conexão com o banco de dados.
 
-Como Executar
+======================================================================
+5. CRIANDO AS TABELAS DO BANCO
+======================================================================
 
-Para rodar o projeto, você precisará de dois terminais abertos simultaneamente:
+Após criar e configurar o arquivo ".env", execute:
 
-  - Terminal 1. (Servidor - o que abrimos no final do passo 3). Caso não o tenha aberto, entre na pasta server e execute:
+npx prisma migrate deploy
 
-    node index.js
+Esse comando criará automaticamente todas as tabelas necessárias para o funcionamento do sistema dentro do banco de dados informado.
 
-  - Terminal 2. (Cliente - para inicar de fato o site) Abra a pasta client e execute:
+Quando esse processo terminar, o servidor estará completamente configurado.
 
-    npm start
+======================================================================
+6. INICIANDO O SERVIDOR
+======================================================================
 
-Acessos de Teste
+Para iniciar o backend execute:
 
-| Perfil         | Identificador | Senha      | Funcionalidades                         |
-| :------------- | :------------ | :--------- | :-------------------------------------- |
-| **Admin**      | `admin.01`    | `senha123` | Gestão total, estoque e relatórios.     |
-| **Contador**   | `cont.01`     | `senha123` | Registro de demanda de alunos.          |
-| **Cozinheiro** | `coz.01`      | `senha123` | Cardápio, preparo e controle de sobras. |
+node index.js
 
-Dicas de Administração (Prisma Studio)
+O servidor ficará em execução aguardando conexões.
 
-Para preencher o banco de dados facilmente (estoque, escolas, turmas), use a
-interface visual do Prisma:
+IMPORTANTE:
+Mantenha essa janela do terminal aberta durante todo o tempo em que estiver utilizando o website.
 
-1.  Na pasta /server, execute: npx prisma studio
-2.  O navegador abrirá uma página. Escolha a tabela desejada, clique em "Add
-    record", preencha os dados e salve.
-      - Nota: Para o estoque funcionar, garanta que os ingredientes estejam
-        cadastrados, mesmo com quantidade 0.
+======================================================================
+7. CONFIGURANDO O CLIENTE
+======================================================================
 
-Arquitetura do Sistema
+Volte para a pasta principal do projeto:
 
-  - Frontend: React.js
-  - Backend: Node.js + Express
-  - ORM: Prisma
-  - Banco de Dados: MySQL
+cd ..
+
+Agora entre na pasta do cliente:
+
+cd client
+
+Instale as dependências executando:
+
+npm i
+
+Esse comando instalará todas as bibliotecas necessárias para executar a interface do sistema.
+
+======================================================================
+8. INICIANDO O WEBSITE
+======================================================================
+
+Após a instalação terminar execute:
+
+npm start
+
+Esse comando iniciará o website. Aguarde alguns segundos até que ele seja aberto no navegador ou acesse o endereço informado no terminal.
+
+======================================================================
+9. USUÁRIOS DE TESTE
+======================================================================
+
+O sistema possui três usuários de demonstração para testar cada nível de acesso.
+
+---
+
+## Administrador
+
+Identificador:
+admin.01
+
+Senha:
+senha123
+
+O administrador possui acesso completo ao sistema. Ele pode cadastrar refeições da semana, definir refeições para cada turma e horário, controlar o estoque e visualizar relatórios e estatísticas em tempo real.
+
+---
+
+## Contador
+
+Identificador:
+cont.01
+
+Senha:
+senha123
+
+O contador é responsável por registrar diariamente a quantidade de pessoas que irão realizar as refeições. Também informa o número de refeições especiais quando necessário.
+
+---
+
+## Cozinheiro
+
+Identificador:
+coz.01
+
+Senha:
+senha123
+
+O cozinheiro possui acesso às refeições programadas para o dia, aos horários em que serão servidas, à quantidade de porções necessárias e ao número de refeições especiais. Após o preparo, também registra a quantidade de alimento preparada e a quantidade de alimento restante ao final de cada turno.
+
+======================================================================
+10. FUNCIONAMENTO DO SISTEMA
+======================================================================
+
+Cada usuário possui acesso apenas às funcionalidades correspondentes ao seu cargo.
+
+Contador:
+
+* Registrar a quantidade de pessoas que irão realizar as refeições.
+* Selecionar a turma correspondente.
+* Informar a quantidade de refeições especiais quando existirem.
+
+Cozinheiro:
+
+* Consultar o cardápio diário.
+* Visualizar horários das refeições.
+* Consultar a quantidade de porções que deverão ser preparadas.
+* Registrar a quantidade de alimento preparada.
+* Registrar a quantidade de alimento restante após cada turno.
+
+Administrador:
+
+* Gerenciar as refeições da semana.
+* Criar novas refeições para cada turma e horário.
+* Gerenciar as movimentações de estoque.
+* Visualizar relatórios e planilhas informativas em tempo real.
+* Acompanhar todos os dados do sistema.
+
+======================================================================
+11. ADICIONANDO VALORES AO BANCO DE DADOS
+======================================================================
+
+O arquivo base de exemplo só poussui 5 usuários, alguns ingredientes, pratos e uma única escola; 
+Mas para a utilização completa de nosso protótipo é necessário varias outros valores em outras tabelas como Estoque de ingredientes, outras escolas, turmas, etc.
+O método mais fácil de fazer isso (entretanto limitado a sua máquina [ou seja, ao mudar de computador não seguiram]) é utilizando o comando:
+npx prisma studio 
+na pasta /Hackathon-2026/server
+após executar esse comando será levado à uma página web com um menu com todas as tabelas de nosso protótipo, clique na que deseja adicionar valores e, em seguida, clique em "Add record" na tool bar localizada no topo da página;
+insira os valores desejado e clique em "Save (X) change(s)".
+Para as funcionalidades do estoque funcionarem, cada ingrediente deve estar cadastrado, mesmo que com 0 unidades
