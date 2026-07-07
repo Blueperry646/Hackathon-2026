@@ -1,0 +1,197 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Perfil {
+  ADMIN
+  CONTADOR
+  COZINHEIRO
+}
+
+enum TipoMovimentacao {
+  ENTRADA
+  SAIDA
+}
+
+model Escola {
+  id             Int                    @id @default(autoincrement())
+  nome           String                 @db.VarChar(150)
+
+  usuarios       Usuario[]
+  turmas         Turma[]
+  cardapios      CardapioSemanal[]
+  estoques       Estoque[]
+
+  @@map("escola")
+}
+
+model Usuario {
+  id             Int       @id @default(autoincrement())
+  nome           String    @db.VarChar(100)
+  identificador  String    @unique @db.VarChar(20)
+  senha          String    @db.VarChar(255)
+  perfil         Perfil
+
+  escolaId       Int       @map("id_escola")
+  escola         Escola    @relation(fields: [escolaId], references: [id])
+
+  producoes      ProducaoRefeicao[]
+
+  @@map("usuario")
+}
+
+model Turma {
+  id             Int       @id @default(autoincrement())
+  nome           String    @db.VarChar(30)
+
+  escolaId       Int       @map("id_escola")
+  escola         Escola    @relation(fields: [escolaId], references: [id])
+
+  cardapios      CardapioSemanal[]
+  confirmacoes   ConfirmacaoRefeicao[]
+
+  @@map("turma")
+}
+
+model RestricaoAlimentar {
+  id             Int       @id @default(autoincrement())
+  nome           String    @db.VarChar(100)
+
+  cardapios      CardapioSemanal[]
+  confirmacoes   ConfirmacaoRefeicao[]
+
+  @@map("restricao_alimentar")
+}
+
+model Ingrediente {
+  id             Int       @id @default(autoincrement())
+  nome           String    @db.VarChar(100)
+  unidade        String    @db.VarChar(20)
+
+  pratos         PratoIngrediente[]
+  estoques       Estoque[]
+
+  @@map("ingrediente")
+}
+
+model Prato {
+  id             Int       @id @default(autoincrement())
+  nome           String    @db.VarChar(100)
+
+  ingredientes   PratoIngrediente[]
+  cardapios      CardapioSemanal[]
+
+  @@map("prato")
+}
+
+model PratoIngrediente {
+
+  pratoId        Int @map("id_prato")
+  ingredienteId  Int @map("id_ingrediente")
+
+  quantidade      Decimal @db.Decimal(8,2)
+
+  prato           Prato @relation(fields: [pratoId], references: [id])
+  ingrediente     Ingrediente @relation(fields: [ingredienteId], references: [id])
+
+  @@id([pratoId, ingredienteId])
+  @@map("prato_ingrediente")
+}
+
+model CardapioSemanal {
+  id              Int      @id @default(autoincrement())
+
+  dataRefeicao    DateTime @db.Date
+  horario         DateTime @db.Time(0)
+
+  escolaId        Int @map("id_escola")
+  turmaId         Int @map("id_turma")
+  pratoId         Int @map("id_prato")
+  restricaoId     Int? @map("id_restricao")
+
+  escola          Escola @relation(fields: [escolaId], references: [id])
+  turma           Turma @relation(fields: [turmaId], references: [id])
+  prato           Prato @relation(fields: [pratoId], references: [id])
+
+  restricao       RestricaoAlimentar? @relation(fields: [restricaoId], references: [id])
+
+  producoes       ProducaoRefeicao[]
+
+  @@map("cardapio_semanal")
+}
+
+model ConfirmacaoRefeicao {
+
+  id              Int @id @default(autoincrement())
+
+  dataRefeicao    DateTime @db.Date
+  quantidade      Int
+
+  turmaId         Int @map("id_turma")
+  restricaoId     Int? @map("id_restricao")
+
+  turma           Turma @relation(fields: [turmaId], references: [id])
+  restricao       RestricaoAlimentar? @relation(fields: [restricaoId], references: [id])
+
+  @@map("confirmacao_refeicao")
+}
+
+model ProducaoRefeicao {
+
+  id              Int @id @default(autoincrement())
+
+  horaPreparo     DateTime? @db.Time(0)
+  kgProduzido     Decimal? @db.Decimal(8,2)
+  kgSobra         Decimal? @db.Decimal(8,2)
+
+  cardapioId      Int @map("id_cardapio")
+  usuarioId       Int @map("id_usuario")
+
+  cardapio        CardapioSemanal @relation(fields: [cardapioId], references: [id])
+  usuario         Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@map("producao_refeicao")
+}
+
+model Estoque {
+
+  id              Int @id @default(autoincrement())
+
+  quantidade      Decimal @db.Decimal(10,2)
+  validade        DateTime? @db.Date
+
+  escolaId        Int @map("id_escola")
+  ingredienteId   Int @map("id_ingrediente")
+
+  escola          Escola @relation(fields: [escolaId], references: [id])
+  ingrediente     Ingrediente @relation(fields: [ingredienteId], references: [id])
+
+  movimentacoes   MovimentacaoEstoque[]
+
+  @@map("estoque")
+}
+
+model MovimentacaoEstoque {
+
+  id                Int @id @default(autoincrement())
+
+  tipo              TipoMovimentacao
+  quantidade        Decimal @db.Decimal(10,2)
+  dataMovimentacao  DateTime @db.DateTime(0)
+
+  estoqueId         Int @map("id_estoque")
+
+  estoque           Estoque @relation(fields: [estoqueId], references: [id])
+
+  @@map("movimentacao_estoque")
+}

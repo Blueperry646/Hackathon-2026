@@ -1,3 +1,10 @@
+/**
+ * SERVIDOR BACKEND (API)
+ * 
+ * Este arquivo centraliza todas as regras de negócio e comunicação com o banco de dados.
+ * Ele recebe pedidos do site (frontend) e responde com os dados necessários.
+ */
+
 require('dotenv').config();
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
@@ -9,699 +16,121 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ============================================
-// 1. AUTENTICAÇÃO (LOGIN)
-// ============================================
-
+// =============================================================================
+// 1. AUTENTICAÇÃO
+// =============================================================================
 app.post('/login', async (req, res) => {
   const { identificador, senha } = req.body;
-
   try {
-    // Busca usuário pelo identificador (matrícula/email) e senha
     const user = await prisma.usuario.findFirst({
-      where: {
-        identificador: identificador,
-        senha: senha, // Protótipo - depois implementar hash
-      },
-      include: {
-        escola: true // Inclui dados da escola
-      }
+      where: { identificador, senha },
+      include: { escola: true }
     });
 
     if (user) {
-      res.json({
-        success: true,
-        user: {
-          id: user.id,
-          nome: user.nome,
-          identificador: user.identificador,
-          perfil: user.perfil,
-          escola: user.escola.nome,
-          escolaId: user.escolaId
-        }
-      });
+      res.json({ success: true, user: { id: user.id, nome: user.nome, perfil: user.perfil, escola: user.escola.nome, escolaId: user.escolaId } });
     } else {
-      res.status(401).json({
-        success: false,
-        message: "Identificador ou senha inválidos"
-      });
+      res.status(401).json({ success: false, message: "Credenciais inválidas" });
     }
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Erro no servidor" });
   }
 });
 
-// ============================================
-// 2. ADMIN - CARDÁPIO
-// ============================================
+// =============================================================================
+// 2. MÓDULO ADMINISTRADOR (Cardápios, Pratos e Estoque)
+// =============================================================================
 
-// Listar cardápios com filtros
+// Cardápio: Listar e Criar
 app.get('/admin/cardapio', async (req, res) => {
-  const { turmaId, data } = req.query;
-
   try {
-    const where = {};
-
-    if (turmaId) where.turmaId = parseInt(turmaId);
-    if (data) {
-      const dataFilter = new Date(data);
-      where.dataRefeicao = {
-        gte: new Date(dataFilter.setHours(0, 0, 0, 0)),
-        lt: new Date(dataFilter.setHours(23, 59, 59, 999))
-      };
-    }
-
-    const cardapios = await prisma.cardapioSemanal.findMany({
-      where,
-      include: {
-        turma: true,
-        prato: {
-          include: {
-            ingredientes: {
-              include: {
-                ingrediente: true
-              }
-            }
-          }
-        },
-        restricao: true,
-        escola: true
-      }
-    });
-        const cardapiosFormatados = cardapios.map(item => ({
-      ...item,
-      horario: item.horario 
-        ? item.horario.toISOString().substring(11, 16) 
-        : null
-    }));
-    res.json(cardapiosFormatados); //se tudo der certo é praquela data lá nn aparecer no site...
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar cardápios" });
-  }
+    const cardapios = await prisma.cardapioSemanal.findMany({ include: { turma: true, prato: { include: { ingredientes: { include: { ingrediente: true } } } }, restricao: true } });
+    res.json(cardapios.map(c => ({ ...c, horario: c.horario?.toISOString().substring(11, 16) })));
+  } catch (e) { res.status(500).json({ error: "Erro ao buscar cardápios" }); }
 });
 
-// Criar novo cardápio
 app.post('/admin/cardapio', async (req, res) => {
-  const { dataRefeicao, horario, escolaId, turmaId, pratoId, restricaoId } = req.body;
-
   try {
-    const horarioFormatado = new Date(`1993-12-10T${horario}:00Z`); //data ficticia só pra não dá erro de date invalid; btw, dia que doom 1 lanço
-    const parsedRestricaoId = parseInt(restricaoId);
-    const temRestricao = !isNaN(parsedRestricaoId); //se nn escrever nada na Id ele vai achar que é NULL e ai nn vai ser int... eu acho???
+    const { dataRefeicao, horario, escolaId, turmaId, pratoId, restricaoId } = req.body;
     const cardapio = await prisma.cardapioSemanal.create({
       data: {
         dataRefeicao: new Date(dataRefeicao),
-        horario: horarioFormatado,
-        escola: {connect:{ id: parseInt(escolaId)} },
-        turma: {connect:{ id: parseInt(turmaId)} },
-        prato: {connect:{ id: parseInt(pratoId)} },
-        ...(temRestricao ? { restricao: { connect: { id: parsedRestricaoId } } } : {}),
-      },
-      include: {
-        turma: true,
-        prato: true,
-        restricao: true
+        horario: new Date(`1993-12-10T${horario}:00Z`),
+        escola: { connect: { id: parseInt(escolaId) } },
+        turma: { connect: { id: parseInt(turmaId) } },
+        prato: { connect: { id: parseInt(pratoId) } },
+        restricao: restricaoId ? { connect: { id: parseInt(restricaoId) } } : undefined
       }
     });
-
     res.status(201).json(cardapio);
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao criar cardápio" });
-  }
+  } catch (e) { res.status(400).json({ error: "Erro ao criar cardápio" }); }
 });
 
-// ATUALIZAR cardápio (NOVO) sei lá pra que isso serve
-app.put('/admin/cardapio/:id', async (req, res) => {
-  const { id } = req.params;
-  const { dataRefeicao, horario, turmaId, pratoId, restricaoId } = req.body;
-
-  try {
-    const cardapio = await prisma.cardapioSemanal.update({
-      where: { id: parseInt(id) },
-      data: {
-        dataRefeicao: dataRefeicao ? new Date(dataRefeicao) : undefined,
-        horario: horario,
-        turmaId: turmaId ? parseInt(turmaId) : undefined,
-        pratoId: pratoId ? parseInt(pratoId) : undefined,
-        restricaoId: restricaoId ? parseInt(restricaoId) : null
-      },
-      include: {
-        turma: true,
-        prato: true,
-        restricao: true
-      }
-    });
-
-    res.json(cardapio);
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao atualizar cardápio" });
-  }
-});
-
-// EXCLUIR cardápio (NOVO) meio obvio não?
-app.delete('/admin/cardapio/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // Primeiro exclui as produções relacionadas
-    await prisma.producaoRefeicao.deleteMany({
-      where: { cardapioId: parseInt(id) }
-    });
-
-    // Depois exclui o cardápio
-    await prisma.cardapioSemanal.delete({
-      where: { id: parseInt(id) }
-    });
-
-    res.json({ success: true, message: "Cardápio excluído com sucesso" });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao excluir cardápio" });
-  }
-});
-
-// ============================================
-// 2. CRUD COMPLETO DE PRATOS (NOVO)
-// ============================================
-
-// Listar todos os pratos
+// Pratos: CRUD Completo
 app.get('/admin/pratos', async (req, res) => {
-  try {
-    const pratos = await prisma.prato.findMany({
-      include: {
-        ingredientes: {
-          include: {
-            ingrediente: true
-          }
-        }
-      }
-    });
-    res.json(pratos);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar pratos" });
-  }
+  const pratos = await prisma.prato.findMany({ include: { ingredientes: { include: { ingrediente: true } } } });
+  res.json(pratos);
 });
 
-// Criar prato
 app.post('/admin/pratos', async (req, res) => {
   const { nome, ingredientes } = req.body;
-
-  try {
-    const prato = await prisma.prato.create({
-      data: {
-        nome: nome,
-        ingredientes: {
-          create: ingredientes.map(ing => ({
-            ingredienteId: parseInt(ing.ingredienteId),
-            quantidade: parseFloat(ing.quantidade)
-          }))
-        }
-      },
-      include: {
-        ingredientes: {
-          include: {
-            ingrediente: true
-          }
-        }
-      }
-    });
-
-    res.status(201).json(prato);
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao criar prato" });
-  }
+  const prato = await prisma.prato.create({
+    data: { nome, ingredientes: { create: ingredientes.map(i => ({ ingredienteId: parseInt(i.ingredienteId), quantidade: parseFloat(i.quantidade) })) } }
+  });
+  res.status(201).json(prato);
 });
 
-// Atualizar prato
-app.put('/admin/pratos/:id', async (req, res) => {
-  const { id } = req.params;
-  const { nome, ingredientes } = req.body;
-
-  try {
-    // Remove ingredientes antigos
-    await prisma.pratoIngrediente.deleteMany({
-      where: { pratoId: parseInt(id) }
-    });
-
-    // Atualiza prato com novos ingredientes
-    const prato = await prisma.prato.update({
-      where: { id: parseInt(id) },
-      data: {
-        nome: nome,
-        ingredientes: {
-          create: ingredientes.map(ing => ({
-            ingredienteId: parseInt(ing.ingredienteId),
-            quantidade: parseFloat(ing.quantidade)
-          }))
-        }
-      },
-      include: {
-        ingredientes: {
-          include: {
-            ingrediente: true
-          }
-        }
-      }
-    });
-
-    res.json(prato);
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao atualizar prato" });
-  }
-});
-
-// Excluir prato
-app.delete('/admin/pratos/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // Remove ingredientes
-    await prisma.pratoIngrediente.deleteMany({
-      where: { pratoId: parseInt(id) }
-    });
-
-    // Remove referências em cardápios
-    await prisma.cardapioSemanal.updateMany({
-      where: { pratoId: parseInt(id) },
-      data: { pratoId: null }
-    });
-
-    // Exclui prato
-    await prisma.prato.delete({
-      where: { id: parseInt(id) }
-    });
-
-    res.json({ success: true, message: "Prato excluído com sucesso" });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao excluir prato" });
-  }
-});
-
-// ============================================
-// 3. BUSCAR CONFIRMAÇÕES POR TURMA (NOVO)
-// ============================================
-
-app.get('/contador/confirmacoes', async (req, res) => {
-  const { turmaId, data } = req.query;
-
-  try {
-    const where = {};
-    if (turmaId) where.turmaId = parseInt(turmaId);
-    if (data) {
-      const dataFilter = new Date(data);
-      where.dataRefeicao = {
-        gte: new Date(dataFilter.setHours(0, 0, 0, 0)),
-        lt: new Date(dataFilter.setHours(23, 59, 59, 999))
-      };
-    }
-
-    const confirmacoes = await prisma.confirmacaoRefeicao.findMany({
-      where,
-      include: {
-        turma: true,
-        restricao: true
-      }
-    });
-
-    res.json(confirmacoes);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar confirmações" });
-  }
-});
-
-// ============================================
-// 4. BUSCAR DADOS PARA O COZINHEIRO (ATUALIZADO)
-// ============================================
-
-app.get('/cozinheiro/cardapio/dia', async (req, res) => {
-  const { escolaId } = req.query;
-
-  if (!escolaId) {
-    return res.status(400).json({ error: "escolaId é obrigatório" });
-  }
-
-  try {
-    // 1. Pegamos a data atual do servidor/máquina local
-    const hoje = new Date();
-    const ano = hoje.getFullYear();
-    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoje.getDate()).padStart(2, '0');
-    
-    // Formato "YYYY-MM-DD" limpo
-    const dataHojeStr = `${ano}-${mes}-${dia}`;
-
-    // 2. Criamos limites exatos em UTC absoluto para o dia de hoje
-    // Isso garante que o banco compare a data sem distorção de fuso horário local
-    const inicioDia = new Date(`${dataHojeStr}T00:00:00.000Z`);
-    const fimDia = new Date(`${dataHojeStr}T23:59:59.999Z`);
-
-    const cardapios = await prisma.cardapioSemanal.findMany({
-      where: {
-        escolaId: parseInt(escolaId),
-        dataRefeicao: {
-          gte: inicioDia,
-          lte: fimDia
-        }
-      },
-      include: {
-        turma: {
-          include: {
-            confirmacoes: {
-              where: {
-                dataRefeicao: {
-                  gte: inicioDia,
-                  lte: fimDia
-                }
-              }
-            }
-          }
-        },
-        prato: {
-          include: {
-            ingredientes: {
-              include: {
-                ingrediente: true
-              }
-            }
-          }
-        },
-        restricao: true
-      }
-    });
-
-    // Calcula o total de porções e mapeia os dados para o frontend
-    const refeicoes = cardapios.map(c => {
-      const totalPorcoes = c.turma.confirmacoes.reduce((acc, conf) => {
-        return acc + conf.quantidade;
-      }, 0);
-
-      return {
-        id: c.id,
-        // Evita fuso horário na formatação de hora simples
-        horario: c.horario 
-          ? c.horario.toISOString().substring(11, 16) 
-          : '--:--',
-        prato: c.prato.nome,
-        porcoes: totalPorcoes || 0,
-        especiais: c.restricao?.nome || "Nenhuma",
-        ingredientes: c.prato.ingredientes.map(pi => ({
-          nome: pi.ingrediente.nome,
-          quantidade: pi.quantidade
-        }))
-      };
-    });
-
-    res.json(refeicoes);
-  } catch (error) {
-    console.error("Erro no Cardápio do Dia do Cozinheiro:", error);
-    res.status(500).json({ error: "Erro ao buscar cardápio do dia" });
-  }
-});
-
-
-// ============================================
-// 3. ADMIN - ESTOQUE
-// ============================================
-
-// Listar estoque
+// Estoque
 app.get('/admin/estoque', async (req, res) => {
-  const { escolaId } = req.query;
-
-  try {
-    const estoque = await prisma.estoque.findMany({
-      where: {
-        escolaId: parseInt(escolaId)
-      },
-      include: {
-        ingrediente: true,
-        movimentacoes: true
-      }
-    });
-
-    res.json(estoque);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar estoque" });
-  }
+  const estoque = await prisma.estoque.findMany({ where: { escolaId: parseInt(req.query.escolaId) }, include: { ingrediente: true } });
+  res.json(estoque);
 });
 
-// Registrar movimentação de estoque // Então, por algum motivo nn tem como criar estoque no site
 app.post('/admin/estoque/movimentacao', async (req, res) => {
   const { estoqueId, tipo, quantidade } = req.body;
-
-  try {
-    // Atualiza quantidade no estoque
-    const estoque = await prisma.estoque.update({
-      where: { id: parseInt(estoqueId) },
-      data: {
-        quantidade: {
-          [tipo === 'ENTRADA' ? 'increment' : 'decrement']: parseFloat(quantidade)
-        }
-      }
-    });
-
-    // Registra movimentação... se deus permitir
-    const movimentacao = await prisma.movimentacaoEstoque.create({
-      data: {
-        tipo: tipo,
-        quantidade: parseFloat(quantidade),
-        dataMovimentacao: new Date(),
-        estoqueId: parseInt(estoqueId)
-      }
-    });
-
-    res.status(201).json({ estoque, movimentacao });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao registrar movimentação" });
-  }
+  const estoque = await prisma.estoque.update({
+    where: { id: parseInt(estoqueId) },
+    data: { quantidade: { [tipo === 'ENTRADA' ? 'increment' : 'decrement']: parseFloat(quantidade) } }
+  });
+  res.status(201).json(estoque);
 });
 
-// ============================================
-// 4. CONTADOR - CONFIRMAÇÃO DE REFEIÇÕES
-// ============================================
-
-// Listar turmas
-app.get('/contador/turmas', async (req, res) => {
-  const { escolaId } = req.query;
-
-  try {
-    const turmas = await prisma.turma.findMany({
-      where: {
-        escolaId: parseInt(escolaId)
-      },
-      include: {
-        confirmacoes: true
-      }
-    });
-
-    res.json(turmas);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar turmas" });
-  }
-});
-
-// Listar restrições alimentares
-app.get('/contador/restricoes', async (req, res) => {
-  try {
-    const restricoes = await prisma.restricaoAlimentar.findMany();
-    res.json(restricoes);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar restrições" });
-  }
-});
-
-// Registrar confirmação de refeição
+// =============================================================================
+// 3. MÓDULO CONTADOR (Confirmações)
+// =============================================================================
 app.post('/contador/confirmacao', async (req, res) => {
   const { turmaId, totalAlunos, restricoes } = req.body;
-
-  try {
-    // 1. Registra confirmação principal
-    const confirmacao = await prisma.confirmacaoRefeicao.create({
-      data: {
-        dataRefeicao: new Date(),
-        quantidade: parseInt(totalAlunos),
-        turmaId: parseInt(turmaId)
-      }
-    });
-
-    // 2. Registra restrições (se houver)
-    if (restricoes && restricoes.length > 0) {
-      // Aqui você pode criar uma tabela de relação
-      // ou atualizar as restrições já existentes
-      // Por simplicidade, vamos apenas atualizar a confirmação
-      // com a primeira restrição (exemplo)
-
-      const restricao = restricoes.find(r => r.quantidade > 0);
-      if (restricao) {
-        await prisma.confirmacaoRefeicao.update({
-          where: { id: confirmacao.id },
-          data: {
-            restricaoId: parseInt(restricao.restricaoId)
-          }
-        });
-      }
-    }
-
-    res.status(201).json({
-      success: true,
-      message: "Confirmação registrada com sucesso",
-      confirmacao
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(400).json({ error: "Erro ao registrar confirmação" });
-  }
+  const confirmacao = await prisma.confirmacaoRefeicao.create({
+    data: { dataRefeicao: new Date(), quantidade: parseInt(totalAlunos), turmaId: parseInt(turmaId) }
+  });
+  res.status(201).json(confirmacao);
 });
 
-// ============================================
-// 5. COZINHEIRO - PRODUÇÃO
-// ============================================
+// =============================================================================
+// 4. MÓDULO COZINHEIRO (Produção e Cardápio do dia)
+// =============================================================================
+app.get('/cozinheiro/cardapio/dia', async (req, res) => {
+  const hoje = new Date();
+  const inicio = new Date(hoje.setHours(0,0,0,0));
+  const fim = new Date(hoje.setHours(23,59,59,999));
+  
+  const cardapios = await prisma.cardapioSemanal.findMany({
+    where: { escolaId: parseInt(req.query.escolaId), dataRefeicao: { gte: inicio, lte: fim } },
+    include: { prato: { include: { ingredientes: { include: { ingrediente: true } } } }, restricao: true }
+  });
+  res.json(cardapios);
+});
 
-// Cardápio do dia
-
-
-// Registrar produção
 app.post('/cozinheiro/producao', async (req, res) => {
   const { cardapioId, usuarioId, horaPreparo, kgProduzido, kgSobra } = req.body;
-
-  try {
-    // CONVERSÃO DA HORA (igual fizemos no Admin)
-    const horaFormatada = new Date(`1970-01-01T${horaPreparo}:00Z`);
-
-    const producao = await prisma.producaoRefeicao.create({
-      data: {
-        horaPreparo: horaFormatada, // Usa o objeto Date
-        kgProduzido: parseFloat(kgProduzido),
-        kgSobra: parseFloat(kgSobra) || 0,
-        cardapioId: parseInt(cardapioId),
-        usuarioId: parseInt(usuarioId)
-      },
-      include: {
-        cardapio: { include: { prato: true } },
-        usuario: true
-      }
-    });
-
-    res.status(201).json(producao);
-  } catch (error) {
-    console.error("Erro ao registrar produção:", error);
-    res.status(400).json({ error: "Erro ao registrar produção" });
-  }
+  const producao = await prisma.producaoRefeicao.create({
+    data: { horaPreparo: new Date(`1970-01-01T${horaPreparo}:00Z`), kgProduzido: parseFloat(kgProduzido), kgSobra: parseFloat(kgSobra), cardapioId: parseInt(cardapioId), usuarioId: parseInt(usuarioId) }
+  });
+  res.status(201).json(producao);
 });
 
-// Histórico de produção do dia
-app.get('/cozinheiro/historico', async (req, res) => {
-  const { usuarioId } = req.query;
-
-  try {
-    const hoje = new Date();
-    const inicioDia = new Date(hoje.setHours(0, 0, 0, 0));
-    const fimDia = new Date(hoje.setHours(23, 59, 59, 999));
-
-    const historico = await prisma.producaoRefeicao.findMany({
-      where: {
-        usuarioId: parseInt(usuarioId),
-        // USANDO O CAMPO CORRETO: horaPreparo
-        horaPreparo: {
-          gte: inicioDia,
-          lte: fimDia
-        }
-      },
-      include: {
-        cardapio: {
-          include: {
-            prato: true
-          }
-        }
-      },
-      orderBy: {
-        horaPreparo: 'desc' // Ordena pela hora de preparo mais recente
-      }
-    });
-
-    // Formata a hora para "HH:mm" para o frontend não dar "Invalid Date"
-    const historicoFormatado = historico.map(item => ({
-      ...item,
-      horaPreparo: item.horaPreparo 
-        ? item.horaPreparo.toISOString().substring(11, 16) 
-        : '--:--'
-    }));
-
-    res.json(historicoFormatado);
-  } catch (error) {
-    console.error("Erro no Histórico:", error);
-    res.status(500).json({ error: "Erro ao buscar histórico" });
-  }
-});
-
-// ============================================
-// 6. ROTAS AUXILIARES
-// ============================================
-
-// Buscar escola do usuário
-app.get('/usuario/escola/:id', async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const usuario = await prisma.usuario.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        escola: true
-      }
-    });
-
-    res.json(usuario?.escola || null);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar escola" });
-  }
-});
-
-// Listar todos os ingredientes
-app.get('/ingredientes', async (req, res) => {
-  try {
-    const ingredientes = await prisma.ingrediente.findMany({
-      orderBy: {
-        nome: 'asc'
-      }
-    });
-    res.json(ingredientes);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erro ao buscar ingredientes" });
-  }
-});
-
-// ============================================
+// =============================================================================
 // INICIAR SERVIDOR
-// ============================================
-
+// =============================================================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-  console.log('📋 Rotas disponíveis:');
-  console.log('  POST /login');
-  console.log('  GET  /admin/cardapio');
-  console.log('  POST /admin/cardapio');
-  console.log('  GET  /admin/estoque');
-  console.log('  POST /admin/estoque/movimentacao');
-  console.log('  GET  /contador/turmas');
-  console.log('  GET  /contador/restricoes');
-  console.log('  POST /contador/confirmacao');
-  console.log('  GET  /cozinheiro/cardapio/dia');
-  console.log('  POST /cozinheiro/producao');
-  console.log('  GET  /cozinheiro/historico');
-  console.log('  GET  /ingredientes');
-});
+app.listen(PORT, () => console.log(`🚀 Servidor rodando em http://localhost:${PORT}`));
