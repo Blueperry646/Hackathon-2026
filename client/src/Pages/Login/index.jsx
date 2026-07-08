@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './style.css';
-import logo from '../../Images/TIAMARI.png';
+import logo from '../../Images/TIAMARI_sem_fundo.png';
 
 /**
  * Página de Login
@@ -189,12 +189,6 @@ function Login() {
                         {loading ? '⏳ ENTRANDO...' : 'ENVIAR'}
                     </button>
                 </form>
-
-                {/* ================= INDICADOR DE SEGURANÇA ================= */}
-                <div className="security-badge">
-                    <span className="security-dot"></span>
-                    Conexão segura
-                </div>
             </div>
 
             {/* ================= FOOTER ================= */}
