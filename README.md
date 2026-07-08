@@ -161,7 +161,7 @@ Identificador:
 admin.01
 
 Senha:
-senha123
+senha
 
 O administrador possui acesso completo ao sistema. Ele pode cadastrar refeições da semana, definir refeições para cada turma e horário, controlar o estoque e visualizar relatórios e estatísticas em tempo real.
 
@@ -173,7 +173,7 @@ Identificador:
 cont.01
 
 Senha:
-senha123
+senha
 
 O contador é responsável por registrar diariamente a quantidade de pessoas que irão realizar as refeições. Também informa o número de refeições especiais quando necessário.
 
@@ -185,9 +185,15 @@ Identificador:
 coz.01
 
 Senha:
-senha123
+senha
 
 O cozinheiro possui acesso às refeições programadas para o dia, aos horários em que serão servidas, à quantidade de porções necessárias e ao número de refeições especiais. Após o preparo, também registra a quantidade de alimento preparada e a quantidade de alimento restante ao final de cada turno.
+
+## Cozinheiro
+
+Separação entre escolas.
+
+O .0x representa a escola pertencente do indivíduo onde X é o id da escola, mudar o X muda a escola sendo acessada
 
 ======================================================================
 10. FUNCIONAMENTO DO SISTEMA

@@ -22,7 +22,7 @@ CREATE TABLE `usuario` (
 -- CreateTable
 CREATE TABLE `turma` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `nome` VARCHAR(30) NOT NULL,
+    `nome` VARCHAR(300) NOT NULL,
     `id_escola` INTEGER NOT NULL,
 
     PRIMARY KEY (`id`)
@@ -166,16 +166,23 @@ ALTER TABLE `estoque` ADD CONSTRAINT `estoque_id_ingrediente_fkey` FOREIGN KEY (
 ALTER TABLE `movimentacao_estoque` ADD CONSTRAINT `movimentacao_estoque_id_estoque_fkey` FOREIGN KEY (`id_estoque`) REFERENCES `estoque`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- 1. Inserindo uma Escola (necessária para os usuários)
-INSERT INTO `escola` (`nome`) VALUES ('Escola Municipal Padrão');
+INSERT INTO `escola` (`nome`) VALUES 
+('Escola Municipal Padrão'),
+('Colégio Cívico-Militar'),
+('Escola Pernambucana de Capoeira e Samba');
 
 -- 2. Inserindo 5 Usuários (Garantindo um de cada perfil)
 -- Senhas em texto simples para exemplo, em produção use hashes.
 INSERT INTO `usuario` (`nome`, `identificador`, `senha`, `perfil`, `id_escola`) VALUES 
-('Alice Administradora', 'admin.01', 'senha123', 'ADMIN', 1),
-('Bruno Contador', 'cont.01', 'senha123', 'CONTADOR', 1),
-('Carlos Cozinheiro', 'coz.01', 'senha123', 'COZINHEIRO', 1),
-('Daniela Cozinheira', 'coz.02', 'senha123', 'COZINHEIRO', 1),
-('Eduardo Contador', 'cont.02', 'senha123', 'CONTADOR', 1);
+('ADM padrão', 'admin.01', 'senha', 'ADMIN', 1),
+('Contador padrão', 'cont.01', 'senha', 'CONTADOR', 1),
+('Cozinheiro padrão', 'coz.01', 'senha', 'COZINHEIRO', 1),
+('Cozinehiro militar', 'coz.02', 'senha', 'COZINHEIRO', 2),
+('Contador militar', 'cont.02', 'senha', 'CONTADOR', 2),
+('ADM militar', 'admin.02', 'senha', 'ADMIN', 2),
+('Cozinehiro sambista', 'coz.03', 'senha', 'COZINHEIRO', 3),
+('Contador capoeirista', 'cont.03', 'senha', 'CONTADOR', 3),
+('ADM capoeirista', 'admin.03', 'senha', 'ADMIN', 3);
 
 -- 3. Inserindo 5 Ingredientes
 INSERT INTO `ingrediente` (`nome`, `unidade`) VALUES 
@@ -185,11 +192,47 @@ INSERT INTO `ingrediente` (`nome`, `unidade`) VALUES
 ('Óleo de Soja', 'Litro'),
 ('Sal Refinado', 'kg');
 
+INSERT INTO `turma` (`nome`, `id_escola`) VALUES
+('1 ano', 1),
+('2 ano', 1),
+('3 ano', 1),
+('4 ano', 1),
+('Mísseis teleguiados', 2),
+('Rastreamento de terroristas', 2),
+('Criação de cortinas de fumaça', 2),
+('Como marchar no quartel', 2),
+('Capoeira', 3),
+('Como se defender de um 38', 3),
+('Como a capoeira virou dança', 3);
+
+INSERT INTO `estoque` (`quantidade`, `id_escola`, `id_ingrediente`) VALUES
+(0, 1, 1),
+(0, 2, 1),
+(0, 3, 1),
+(0, 1, 2),
+(0, 2, 2),
+(0, 3, 2),
+(0, 1, 3),
+(0, 2, 3),
+(0, 3, 3),
+(0, 1, 4),
+(0, 2, 4),
+(0, 3, 4),
+(0, 1, 5),
+(0, 2, 5),
+(0, 3, 5);
+
 -- 4. Inserindo 3 Pratos
 INSERT INTO `prato` (`nome`) VALUES 
 ('Arroz com Feijão Simples'),
 ('Canja de Galinha'),
 ('Frango Grelhado com Arroz');
+
+INSERT INTO `restricao_alimentar` (`nome`) VALUES
+('Diabete'),
+('Vegetarianismo'),
+('Judaismo'),
+('Pressão alta');
 
 -- 5. Opcional: Vinculando Ingredientes aos Pratos (Tabela prato_ingrediente)
 -- Isso é necessário para que o sistema saiba o que compõe cada prato
@@ -200,3 +243,5 @@ INSERT INTO `prato_ingrediente` (`id_prato`, `id_ingrediente`, `quantidade`) VAL
 (2, 1, 0.05), -- Arroz na 'Canja'
 (3, 3, 0.20), -- Frango no 'Frango Grelhado'
 (3, 1, 0.10); -- Arroz no 'Frango Grelhado'
+
+
