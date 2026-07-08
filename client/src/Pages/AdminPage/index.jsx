@@ -385,14 +385,13 @@ function AdminPage() {
             return;
         }
 
-        // TENTAMOS ENCONTRAR ESSE INGREDIENTE NO SEU ESTOQUE ATUAL
         const itemNoEstoque = estoque.find(item =>
             item.ingredienteId === parseInt(formEstoque.ingredienteId)
         );
 
         if (!itemNoEstoque) {
             setMensagem({
-                texto: 'Este ingrediente ainda não foi inicializado no estoque da sua escola via Prisma Studio.',
+                texto: 'Este ingrediente ainda não foi inicializado no estoque da sua escola.',
                 tipo: 'erro'
             });
             return;
@@ -400,14 +399,14 @@ function AdminPage() {
 
         try {
             await axios.post('http://localhost:5000/admin/estoque/movimentacao', {
-                estoqueId: itemNoEstoque.id, // Enviamos o ID do estoque, não do ingrediente
+                estoqueId: itemNoEstoque.id,
                 tipo: formEstoque.tipoMovimentacao,
                 quantidade: parseFloat(formEstoque.quantidade)
             });
 
             setMensagem({ texto: 'Movimentação registrada com sucesso!', tipo: 'sucesso' });
             setFormEstoque({ ingredienteId: '', quantidade: '', tipoMovimentacao: 'ENTRADA' });
-            listarEstoque(); // Atualiza a tabela e os gráficos
+            listarEstoque();
 
         } catch (error) {
             console.error('Erro ao registrar:', error);
@@ -422,41 +421,41 @@ function AdminPage() {
     // Dados para os Gráficos
     const dadosEstoque = {
         labels: estoque.map(i => i.ingrediente?.nome || 'Item'),
-        datasets: [{ label: 'Qtd em KG', data: estoque.map(i => i.quantidade), backgroundColor: '#0b5ea8' }]
+        datasets: [{ 
+            label: 'Qtd em KG', 
+            data: estoque.map(i => i.quantidade), 
+            backgroundColor: '#2E7D32',
+            borderRadius: 4
+        }]
     };
 
     const dadosPratos = {
         labels: pratos.slice(0, 5).map(p => p.nome),
         datasets: [{
             data: pratos.slice(0, 5).map(p => cardapios.filter(c => c.pratoId === p.id).length),
-            backgroundColor: ['#0b5ea8', '#28a745', '#ffc107', '#dc3545', '#6c757d']
+            backgroundColor: ['#2E7D32', '#1B5E20', '#FB8C00', '#E65100', '#4CAF50']
         }]
     };
 
     const dadosComplexidade = {
         labels: pratos.map(p => p.nome),
         datasets: [{
-            fill: true, label: 'Nº de Ingredientes', data: pratos.map(p => p.ingredientes?.length || 0),
-            borderColor: '#28a745', backgroundColor: 'rgba(40, 167, 69, 0.1)', tension: 0.4
+            fill: true, 
+            label: 'Nº de Ingredientes', 
+            data: pratos.map(p => p.ingredientes?.length || 0),
+            borderColor: '#2E7D32', 
+            backgroundColor: 'rgba(46, 125, 50, 0.1)', 
+            tension: 0.4
         }]
     };
 
     if (loading) {
         return (
             <div className="admin-page">
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    flexDirection: 'column'
-                }}>
-                    <div style={{ fontSize: '24px', marginBottom: '20px' }}>
-                        Carregando...
-                    </div>
-                    <div style={{ color: '#666' }}>
-                        Preparando o painel administrativo
-                    </div>
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <div className="loading-text">Carregando...</div>
+                    <div className="loading-subtext">Preparando o painel administrativo</div>
                 </div>
             </div>
         );
@@ -476,154 +475,114 @@ function AdminPage() {
             case "cardapio":
                 return (
                     <div className="content-box">
-                        <h2>GERENCIAMENTO DE CARDAPIO</h2>
+                        <h2>GERENCIAMENTO DE CARDÁPIO</h2>
 
-                        {mensagem.texto && mensagem.tipo === 'sucesso' && (
-                            <div style={{
-                                color: '#155724',
-                                padding: '12px 16px',
-                                background: '#d4edda',
-                                borderRadius: '4px',
-                                marginBottom: '15px'
-                            }}>
-                                {mensagem.texto}
-                            </div>
-                        )}
-
-                        <div style={{
-                            background: '#f8fafc',
-                            padding: '20px',
-                            borderRadius: '6px',
-                            border: '1px solid #e0e4e8',
-                            marginBottom: '20px'
-                        }}>
-                            <h3>Criar Novo Cardapio</h3>
-                            <form onSubmit={criarCardapio} style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '15px',
-                                marginTop: '15px'
-                            }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Data</label>
-                                    <input
-                                        type="date"
-                                        value={formCardapio.dataRefeicao}
-                                        onChange={(e) => setFormCardapio({ ...formCardapio, dataRefeicao: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    />
+                        <div className="form-section">
+                            <h3>Criar Novo Cardápio</h3>
+                            <form onSubmit={criarCardapio}>
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label>Data</label>
+                                        <input
+                                            type="date"
+                                            value={formCardapio.dataRefeicao}
+                                            onChange={(e) => setFormCardapio({ ...formCardapio, dataRefeicao: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Horário</label>
+                                        <input
+                                            type="time"
+                                            value={formCardapio.horario}
+                                            onChange={(e) => setFormCardapio({ ...formCardapio, horario: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Turma</label>
+                                        <select
+                                            value={formCardapio.turmaId}
+                                            onChange={(e) => setFormCardapio({ ...formCardapio, turmaId: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Selecione</option>
+                                            {turmas.map(t => (
+                                                <option key={t.id} value={t.id}>{t.nome}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Prato</label>
+                                        <select
+                                            value={formCardapio.pratoId}
+                                            onChange={(e) => setFormCardapio({ ...formCardapio, pratoId: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Selecione</option>
+                                            {pratos.map(p => (
+                                                <option key={p.id} value={p.id}>{p.nome}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group full-width">
+                                        <label>Restrição (opcional)</label>
+                                        <select
+                                            value={formCardapio.restricaoId}
+                                            onChange={(e) => setFormCardapio({ ...formCardapio, restricaoId: e.target.value })}
+                                        >
+                                            <option value="">Nenhuma</option>
+                                            {restricoes.map(r => (
+                                                <option key={r.id} value={r.id}>{r.nome}</option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Horario</label>
-                                    <input
-                                        type="time"
-                                        value={formCardapio.horario}
-                                        onChange={(e) => setFormCardapio({ ...formCardapio, horario: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Turma</label>
-                                    <select
-                                        value={formCardapio.turmaId}
-                                        onChange={(e) => setFormCardapio({ ...formCardapio, turmaId: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    >
-                                        <option value="">Selecione</option>
-                                        {turmas.map(t => (
-                                            <option key={t.id} value={t.id}>{t.nome}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Prato</label>
-                                    <select
-                                        value={formCardapio.pratoId}
-                                        onChange={(e) => setFormCardapio({ ...formCardapio, pratoId: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    >
-                                        <option value="">Selecione</option>
-                                        {pratos.map(p => (
-                                            <option key={p.id} value={p.id}>{p.nome}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Restricao (opcional)</label>
-                                    <select
-                                        value={formCardapio.restricaoId}
-                                        onChange={(e) => setFormCardapio({ ...formCardapio, restricaoId: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                    >
-                                        <option value="">Nenhuma</option>
-                                        {restricoes.map(r => (
-                                            <option key={r.id} value={r.id}>{r.nome}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <button type="submit" style={{
-                                        padding: '10px 20px',
-                                        background: '#0b5ea8',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600'
-                                    }}>
-                                        Criar Cardapio
-                                    </button>
-                                </div>
+                                <br />
+                                <button type="submit" className="btn-primary">
+                                    Criar Cardápio
+                                </button>
                             </form>
                         </div>
 
-                        <div>
-                            <h3>Cardapios Cadastrados</h3>
+                        <div className="table-section">
+                            <h3>Cardápios Cadastrados</h3>
                             {cardapios.length === 0 ? (
-                                <p style={{ color: '#999' }}>Nenhum cardapio cadastrado.</p>
+                                <p className="empty-message">Nenhum cardápio cadastrado.</p>
                             ) : (
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Data</th>
-                                            <th>Horario</th>
-                                            <th>Turma</th>
-                                            <th>Prato</th>
-                                            <th>Acoes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {cardapios.map(c => (
-                                            <tr key={c.id}>
-                                                <td>
-                                                    {new Date(c.dataRefeicao).toLocaleDateString('pt-BR')}
-                                                </td>
-                                                <td>{c.horario}</td>
-                                                <td>{c.turma?.nome || 'N/A'}</td>
-                                                <td>{c.prato?.nome || 'N/A'}</td>
-                                                <td>
-                                                    <button
-                                                        onClick={() => excluirCardapio(c.id)}
-                                                        style={{
-                                                            padding: '4px 12px',
-                                                            background: '#dc3545',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '4px',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        Excluir
-                                                    </button>
-                                                </td>
+                                <div className="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Horário</th>
+                                                <th>Turma</th>
+                                                <th>Prato</th>
+                                                <th>Ações</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {cardapios.map(c => (
+                                                <tr key={c.id}>
+                                                    <td>
+                                                        {new Date(c.dataRefeicao).toLocaleDateString('pt-BR')}
+                                                    </td>
+                                                    <td>{c.horario}</td>
+                                                    <td>{c.turma?.nome || 'N/A'}</td>
+                                                    <td>{c.prato?.nome || 'N/A'}</td>
+                                                    <td>
+                                                        <button
+                                                            onClick={() => excluirCardapio(c.id)}
+                                                            className="btn-danger btn-sm"
+                                                        >
+                                                            Excluir
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -638,175 +597,115 @@ function AdminPage() {
                     <div className="content-box">
                         <h2>GERENCIAMENTO DE PRATOS</h2>
 
-                        {mensagem.texto && mensagem.tipo === 'sucesso' && (
-                            <div style={{
-                                color: '#155724',
-                                padding: '12px 16px',
-                                background: '#d4edda',
-                                borderRadius: '4px',
-                                marginBottom: '15px'
-                            }}>
-                                {mensagem.texto}
-                            </div>
-                        )}
-
                         <button
                             onClick={() => setMostrarFormPrato(!mostrarFormPrato)}
-                            style={{
-                                padding: '10px 20px',
-                                background: '#0b5ea8',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                alignSelf: 'flex-start',
-                                marginBottom: '15px'
-                            }}
+                            className={`btn-${mostrarFormPrato ? 'secondary' : 'primary'}`}
                         >
-                            {mostrarFormPrato ? 'Cancelar' : '+ Novo Prato'}
+                            {mostrarFormPrato ? '❌ Cancelar' : 'Novo Prato'}
                         </button>
 
                         {mostrarFormPrato && (
-                            <form onSubmit={criarPrato} style={{
-                                background: '#f8fafc',
-                                padding: '20px',
-                                borderRadius: '6px',
-                                border: '1px solid #e0e4e8',
-                                marginBottom: '20px'
-                            }}>
-                                <div style={{ marginBottom: '15px' }}>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Nome do Prato</label>
-                                    <input
-                                        type="text"
-                                        value={formPrato.nome}
-                                        onChange={(e) => setFormPrato({ ...formPrato, nome: e.target.value })}
-                                        placeholder="Ex: Arroz com Feijao"
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    />
-                                </div>
+                            <div className="form-section">
+                                <h3>Criar Novo Prato</h3>
+                                <form onSubmit={criarPrato}>
+                                    <div className="form-group">
+                                        <label>Nome do Prato</label>
+                                        <input
+                                            type="text"
+                                            value={formPrato.nome}
+                                            onChange={(e) => setFormPrato({ ...formPrato, nome: e.target.value })}
+                                            placeholder="Ex: Arroz com Feijão"
+                                            required
+                                        />
+                                    </div>
 
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Ingredientes</label>
-                                    {formPrato.ingredientes.map((ing, index) => (
-                                        <div key={index} style={{ display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'center' }}>
-                                            <select
-                                                value={ing.ingredienteId}
-                                                onChange={(e) => atualizarIngrediente(index, 'ingredienteId', e.target.value)}
-                                                style={{ flex: 2, padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                                required
-                                            >
-                                                <option value="">Selecione</option>
-                                                {ingredientes.map(i => (
-                                                    <option key={i.id} value={i.id}>{i.nome}</option>
-                                                ))}
-                                            </select>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                placeholder="Quantidade (kg)"
-                                                value={ing.quantidade}
-                                                onChange={(e) => atualizarIngrediente(index, 'quantidade', e.target.value)}
-                                                style={{ flex: 1, padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                                required
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removerIngrediente(index)}
-                                                style={{
-                                                    padding: '8px 14px',
-                                                    background: '#dc3545',
-                                                    color: 'white',
-                                                    border: 'none',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer'
-                                                }}
-                                            >
-                                                X
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button
-                                        type="button"
-                                        onClick={adicionarIngrediente}
-                                        style={{
-                                            padding: '6px 14px',
-                                            background: '#28a745',
-                                            color: 'white',
-                                            border: 'none',
-                                            borderRadius: '4px',
-                                            cursor: 'pointer',
-                                            marginTop: '8px'
-                                        }}
-                                    >
-                                        + Adicionar Ingrediente
+                                    <div className="form-group">
+                                        <label>Ingredientes</label>
+                                        {formPrato.ingredientes.map((ing, index) => (
+                                            <div key={index} className="ingredient-row">
+                                                <select
+                                                    value={ing.ingredienteId}
+                                                    onChange={(e) => atualizarIngrediente(index, 'ingredienteId', e.target.value)}
+                                                    required
+                                                >
+                                                    <option value="">Selecione</option>
+                                                    {ingredientes.map(i => (
+                                                        <option key={i.id} value={i.id}>{i.nome}</option>
+                                                    ))}
+                                                </select>
+                                                <input
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="Quantidade (kg)"
+                                                    value={ing.quantidade}
+                                                    onChange={(e) => atualizarIngrediente(index, 'quantidade', e.target.value)}
+                                                    required
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removerIngrediente(index)}
+                                                    className="btn-danger btn-sm"
+                                                >
+                                                    ✕
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={adicionarIngrediente}
+                                            className="btn-success btn-sm"
+                                        >
+                                            Adicionar Ingrediente
+                                        </button>
+                                    </div>
+
+                                    <button type="submit" className="btn-primary">
+                                        Salvar Prato
                                     </button>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    style={{
-                                        padding: '10px 20px',
-                                        background: '#0b5ea8',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600',
-                                        marginTop: '15px'
-                                    }}
-                                >
-                                    Salvar Prato
-                                </button>
-                            </form>
+                                </form>
+                            </div>
                         )}
 
-                        <div>
+                        <div className="table-section">
                             <h3>Pratos Cadastrados</h3>
                             {pratos.length === 0 ? (
-                                <p style={{ color: '#999' }}>Nenhum prato cadastrado.</p>
+                                <p className="empty-message">Nenhum prato cadastrado.</p>
                             ) : (
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Nome</th>
-                                            <th>Ingredientes</th>
-                                            <th>Acoes</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {pratos.map(p => (
-                                            <tr key={p.id}>
-                                                <td>{p.nome}</td>
-                                                <td>
-                                                    {p.ingredientes && p.ingredientes.length > 0 ? (
-                                                        p.ingredientes.map(pi =>
-                                                            `${pi.ingrediente?.nome || 'N/A'} (${pi.quantidade}kg)`
-                                                        ).join(', ')
-                                                    ) : (
-                                                        'Sem ingredientes'
-                                                    )}
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        onClick={() => excluirPrato(p.id)}
-                                                        style={{
-                                                            padding: '4px 12px',
-                                                            background: '#dc3545',
-                                                            color: 'white',
-                                                            border: 'none',
-                                                            borderRadius: '4px',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        Excluir
-                                                    </button>
-                                                </td>
+                                <div className="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Nome</th>
+                                                <th>Ingredientes</th>
+                                                <th>Ações</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {pratos.map(p => (
+                                                <tr key={p.id}>
+                                                    <td><strong>{p.nome}</strong></td>
+                                                    <td>
+                                                        {p.ingredientes && p.ingredientes.length > 0 ? (
+                                                            p.ingredientes.map(pi =>
+                                                                `${pi.ingrediente?.nome || 'N/A'} (${pi.quantidade}kg)`
+                                                            ).join(', ')
+                                                        ) : (
+                                                            <span className="text-muted">Sem ingredientes</span>
+                                                        )}
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            onClick={() => excluirPrato(p.id)}
+                                                            className="btn-danger btn-sm"
+                                                        >
+                                                            Excluir
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -819,37 +718,49 @@ function AdminPage() {
             case "analise":
                 return (
                     <div className="content-box">
-                        <h2>ANALISE DE DADOS</h2>
+                        <h2>ANÁLISE DE DADOS</h2>
 
-                        {/* Seus cards originais de análise aqui */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-                            <div className="dashboard-card-custom">
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#0b5ea8' }}>{analises.totalRefeicoes}</div>
-                                <div style={{ color: '#666', fontSize: '14px' }}>Total de Refeicoes</div>
+                        <div className="dashboard-cards">
+                            <div className="dashboard-card">
+                                <div className="card-icon"></div>
+                                <div className="card-number">{analises.totalRefeicoes}</div>
+                                <div className="card-label">Total de Refeições</div>
                             </div>
-                            <div className="dashboard-card-custom">
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#28a745' }}>{analises.totalPratos}</div>
-                                <div style={{ color: '#666', fontSize: '14px' }}>Pratos Cadastrados</div>
+                            <div className="dashboard-card">
+                                <div className="card-icon"></div>
+                                <div className="card-number">{analises.totalPratos}</div>
+                                <div className="card-label">Pratos Cadastrados</div>
                             </div>
-                            <div className="dashboard-card-custom">
-                                <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#dc3545' }}>{analises.totalEstoque}kg</div>
-                                <div style={{ color: '#666', fontSize: '14px' }}>Total em Estoque</div>
+                            <div className="dashboard-card">
+                                <div className="card-icon"></div>
+                                <div className="card-number">{analises.totalEstoque}kg</div>
+                                <div className="card-label">Total em Estoque</div>
+                            </div>
+                            <div className="dashboard-card">
+                                <div className="card-icon"></div>
+                                <div className="card-number">{turmas.length}</div>
+                                <div className="card-label">Turmas Ativas</div>
                             </div>
                         </div>
 
-                        {/* --- NOVA ÁREA DE GRÁFICOS --- */}
                         <div className="charts-grid">
                             <div className="chart-container">
                                 <h3>Níveis de Estoque (KG)</h3>
-                                <div style={{ height: '250px' }}><Bar data={dadosEstoque} options={{ maintainAspectRatio: false }} /></div>
+                                <div className="chart-wrapper">
+                                    <Bar data={dadosEstoque} options={{ maintainAspectRatio: false }} />
+                                </div>
                             </div>
                             <div className="chart-container">
-                                <h3>Frequência de Pratos no Cardápio</h3>
-                                <div style={{ height: '250px' }}><Doughnut data={dadosPratos} options={{ maintainAspectRatio: false }} /></div>
+                                <h3>Frequência de Pratos</h3>
+                                <div className="chart-wrapper">
+                                    <Doughnut data={dadosPratos} options={{ maintainAspectRatio: false }} />
+                                </div>
                             </div>
                             <div className="chart-container chart-full-width">
                                 <h3>Complexidade (Ingredientes por Prato)</h3>
-                                <div style={{ height: '200px' }}><Line data={dadosComplexidade} options={{ maintainAspectRatio: false }} /></div>
+                                <div className="chart-wrapper">
+                                    <Line data={dadosComplexidade} options={{ maintainAspectRatio: false }} />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -862,130 +773,98 @@ function AdminPage() {
             case "estoque":
                 return (
                     <div className="content-box">
-                        <h2>GESTAO DE ESTOQUE</h2>
+                        <h2>GESTÃO DE ESTOQUE</h2>
 
-                        {mensagem.texto && mensagem.tipo === 'sucesso' && (
-                            <div style={{
-                                color: '#155724',
-                                padding: '12px 16px',
-                                background: '#d4edda',
-                                borderRadius: '4px',
-                                marginBottom: '15px'
-                            }}>
-                                {mensagem.texto}
-                            </div>
-                        )}
-
-                        <div style={{
-                            background: '#f8fafc',
-                            padding: '20px',
-                            borderRadius: '6px',
-                            border: '1px solid #e0e4e8',
-                            marginBottom: '20px'
-                        }}>
-                            <h3>Registrar Movimentacao</h3>
-                            <form onSubmit={registrarMovimentacao} style={{
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr 1fr',
-                                gap: '15px',
-                                marginTop: '15px'
-                            }}>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Ingrediente</label>
-                                    <select
-                                        value={formEstoque.ingredienteId}
-                                        onChange={(e) => setFormEstoque({ ...formEstoque, ingredienteId: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    >
-                                        <option value="">Selecione o ingrediente</option>
-                                        {/* Usamos 'ingredientes' para o menu não ficar vazio */}
-                                        {ingredientes.map(ing => (
-                                            <option key={ing.id} value={ing.id}>
-                                                {ing.nome}
-                                            </option>
-                                        ))}
-                                    </select>
+                        <div className="form-section">
+                            <h3>Registrar Movimentação</h3>
+                            <form onSubmit={registrarMovimentacao}>
+                                <div className="form-grid">
+                                    <div className="form-group">
+                                        <label>Ingrediente</label>
+                                        <select
+                                            value={formEstoque.ingredienteId}
+                                            onChange={(e) => setFormEstoque({ ...formEstoque, ingredienteId: e.target.value })}
+                                            required
+                                        >
+                                            <option value="">Selecione o ingrediente</option>
+                                            {ingredientes.map(ing => (
+                                                <option key={ing.id} value={ing.id}>
+                                                    {ing.nome}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Tipo</label>
+                                        <select
+                                            value={formEstoque.tipoMovimentacao}
+                                            onChange={(e) => setFormEstoque({ ...formEstoque, tipoMovimentacao: e.target.value })}
+                                            required
+                                        >
+                                            <option value="ENTRADA">Entrada</option>
+                                            <option value="SAIDA">Saída</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Quantidade (kg)</label>
+                                        <input
+                                            type="number"
+                                            step="0.01"
+                                            value={formEstoque.quantidade}
+                                            onChange={(e) => setFormEstoque({ ...formEstoque, quantidade: e.target.value })}
+                                            required
+                                        />
+                                    </div>
                                 </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Tipo</label>
-                                    <select
-                                        value={formEstoque.tipoMovimentacao}
-                                        onChange={(e) => setFormEstoque({ ...formEstoque, tipoMovimentacao: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    >
-                                        <option value="ENTRADA">Entrada</option>
-                                        <option value="SAIDA">Saida</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label style={{ display: 'block', marginBottom: '4px', fontWeight: '600', fontSize: '13px' }}>Quantidade (kg)</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formEstoque.quantidade}
-                                        onChange={(e) => setFormEstoque({ ...formEstoque, quantidade: e.target.value })}
-                                        style={{ width: '100%', padding: '8px 12px', border: '1px solid #d0d4d8', borderRadius: '4px' }}
-                                        required
-                                    />
-                                </div>
-                                <div style={{ gridColumn: '1 / -1' }}>
-                                    <button type="submit" style={{
-                                        padding: '10px 20px',
-                                        background: '#28a745',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '4px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600'
-                                    }}>
-                                        Registrar Movimentacao
-                                    </button>
-                                </div>
+                                <br />
+                                <button type="submit" className="btn-success">
+                                    Registrar Movimentação
+                                </button>
                             </form>
                         </div>
 
-                        <div>
+                        <div className="table-section">
                             <h3>Estoque Atual</h3>
                             {estoque.length === 0 ? (
-                                <p style={{ color: '#999' }}>Nenhum item no estoque.</p>
+                                <p className="empty-message">Nenhum item no estoque.</p>
                             ) : (
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Ingrediente</th>
-                                            <th>Quantidade (kg)</th>
-                                            <th>Validade</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {estoque.map(item => {
-                                            const hoje = new Date();
-                                            const validade = new Date(item.validade);
-                                            const estaVencido = validade < hoje;
-                                            const vaiVencer = (validade - hoje) / (1000 * 60 * 60 * 24) < 7 && !estaVencido;
+                                <div className="table-wrapper">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Ingrediente</th>
+                                                <th>Quantidade (kg)</th>
+                                                <th>Validade</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {estoque.map(item => {
+                                                const hoje = new Date();
+                                                const validade = new Date(item.validade);
+                                                const estaVencido = validade < hoje;
+                                                const vaiVencer = (validade - hoje) / (1000 * 60 * 60 * 24) < 7 && !estaVencido;
 
-                                            return (
-                                                <tr key={item.id}>
-                                                    <td>{item.ingrediente?.nome || 'N/A'}</td>
-                                                    <td>{item.quantidade}</td>
-                                                    <td>{new Date(item.validade).toLocaleDateString('pt-BR')}</td>
-                                                    <td>
-                                                        {estaVencido ? (
-                                                            <span style={{ color: '#dc3545', fontWeight: 'bold' }}>Vencido</span>
-                                                        ) : vaiVencer ? (
-                                                            <span style={{ color: '#ffc107', fontWeight: 'bold' }}>Vence em breve</span>
-                                                        ) : (
-                                                            <span style={{ color: '#28a745' }}>OK</span>
-                                                        )}
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                                                return (
+                                                    <tr key={item.id}>
+                                                        <td><strong>{item.ingrediente?.nome || 'N/A'}</strong></td>
+                                                        <td>{item.quantidade}</td>
+                                                        <td>{new Date(item.validade).toLocaleDateString('pt-BR')}</td>
+                                                        <td>
+                                                            {estaVencido ? (
+                                                                <span className="status-badge status-vencido">🔴 Vencido</span>
+                                                            ) : vaiVencer ? (
+                                                                <span className="status-badge status-alerta">🟡 Vence em breve</span>
+                                                            ) : (
+                                                                <span className="status-badge status-ok">🟢 OK</span>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -1004,26 +883,36 @@ function AdminPage() {
         <div className="admin-page">
             {/* ================= HEADER ================= */}
             <header className="admin-header">
-                <h1>{escola || "ESCOLA MUNICIPAL"}</h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div className="header-left">
+                    <h1>{escola || "ESCOLA MUNICIPAL"}</h1>
+                </div>
+                <div className="header-right">
                     <h2>{dataAtual}</h2>
                     <LogoutButton />
                 </div>
             </header>
 
-            <hr />
+            {/* ================= MENSAGENS ================= */}
+            {mensagem.texto && (
+                <div className={`mensagem ${mensagem.tipo}`}>
+                    {mensagem.texto}
+                </div>
+            )}
 
             {/* ================= BODY ================= */}
             <div className="admin-body">
                 {/* ================= SIDEBAR ================= */}
                 <aside className="sidebar">
-                    <h3>ADMINISTRADOR</h3>
+                    <div className="sidebar-header">
+                        <span className="sidebar-icon"></span>
+                        <h3>ADMIN</h3>
+                    </div>
 
                     <button
                         onClick={() => setMenuAtivo("cardapio")}
                         className={menuAtivo === "cardapio" ? "active" : ""}
                     >
-                        Cardapio
+                        Cardápio
                     </button>
 
                     <button
@@ -1037,7 +926,7 @@ function AdminPage() {
                         onClick={() => setMenuAtivo("analise")}
                         className={menuAtivo === "analise" ? "active" : ""}
                     >
-                        Analise de Dados
+                        Análise
                     </button>
 
                     <button
@@ -1056,7 +945,7 @@ function AdminPage() {
 
             {/* ================= FOOTER ================= */}
             <footer className="admin-footer">
-                Prototipo da pagina do administrador desenvolvido pela equipe Try Catcher - Hackathon 2026
+                Protótipo da página do administrador desenvolvido pela equipe <span>Try Catcher</span> - Hackathon 2026
             </footer>
         </div>
     );

@@ -295,19 +295,10 @@ function Contador() {
     if (loading) {
         return (
             <div className="contador-page">
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    flexDirection: 'column'
-                }}>
-                    <div style={{ fontSize: '24px', marginBottom: '20px' }}>
-                        Carregando...
-                    </div>
-                    <div style={{ color: '#666' }}>
-                        Preparando os dados do contador
-                    </div>
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <div className="loading-text">Carregando...</div>
+                    <div className="loading-subtext">Preparando os dados do contador</div>
                 </div>
             </div>
         );
@@ -317,42 +308,25 @@ function Contador() {
     // RENDERIZAÇÃO PRINCIPAL
     // ===========================
 
+    const totalRestricoes = Object.values(valoresRestricoes).reduce((a, b) => a + b, 0);
+    const totalAlunosNum = parseInt(totalAlunos) || 0;
+
     return (
         <div className="contador-page">
             {/* ================= HEADER ================= */}
             <header className="contador-header">
-                <h1>{escola || "ESCOLA"}</h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div className="header-left">
+                    <h1>{escola || "ESCOLA MUNICIPAL"}</h1>
+                </div>
+                <div className="header-right">
                     <h2>{dataAtual}</h2>
-                    <LogoutButton /> {/* ← ADICIONAR */}
+                    <LogoutButton />
                 </div>
             </header>
 
-            <hr />
-
             {/* ================= MENSAGENS DE FEEDBACK ================= */}
             {mensagem.texto && (
-                <div style={{
-                    padding: '12px 20px',
-                    margin: '10px auto',
-                    maxWidth: '800px',
-                    borderRadius: '4px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    backgroundColor:
-                        mensagem.tipo === 'sucesso' ? '#d4edda' :
-                            mensagem.tipo === 'erro' ? '#f8d7da' :
-                                mensagem.tipo === 'info' ? '#d1ecf1' : '#f8f9fa',
-                    color:
-                        mensagem.tipo === 'sucesso' ? '#155724' :
-                            mensagem.tipo === 'erro' ? '#721c24' :
-                                mensagem.tipo === 'info' ? '#0c5460' : '#383d41',
-                    border: '1px solid',
-                    borderColor:
-                        mensagem.tipo === 'sucesso' ? '#c3e6cb' :
-                            mensagem.tipo === 'erro' ? '#f5c6cb' :
-                                mensagem.tipo === 'info' ? '#bee5eb' : '#d6d8db'
-                }}>
+                <div className={`mensagem ${mensagem.tipo}`}>
                     {mensagem.texto}
                 </div>
             )}
@@ -360,6 +334,11 @@ function Contador() {
             {/* ================= CONTEÚDO PRINCIPAL ================= */}
             <div className="contador-body">
                 <div className="contador-card">
+
+                    {/* ================= TÍTULO DO CARD ================= */}
+                    <div className="card-title">
+                        CONFIRMAÇÃO DE REFEIÇÕES
+                    </div>
 
                     {/* ================= SELEÇÃO DE TURMA ================= */}
                     <div className="contador-row">
@@ -399,7 +378,7 @@ function Contador() {
                         <input
                             type="number"
                             min="0"
-                            placeholder="Inserir número"
+                            placeholder="Digite o total de alunos"
                             value={totalAlunos}
                             onChange={(e) => setTotalAlunos(e.target.value)}
                             disabled={enviando}
@@ -407,91 +386,72 @@ function Contador() {
                     </div>
 
                     {/* ================= RESTRIÇÕES ALIMENTARES ================= */}
-                    <div className="restricoes">
-                        <div style={{
-                            width: '100%',
-                            textAlign: 'center',
-                            marginBottom: '15px',
-                            fontSize: '14px',
-                            color: '#ffffffff'
-                        }}>
-                            Alunos com restrições alimentares
+                    <div className="restricoes-section">
+                        <div className="restricoes-header">
+                            <span className="restricoes-icon"></span>
+                            <span>ALUNOS COM RESTRIÇÕES ALIMENTARES</span>
                         </div>
 
-                        {restricoes.length === 0 ? (
-                            <div style={{
-                                textAlign: 'center',
-                                color: '#ffffffff',
-                                padding: '20px'
-                            }}>
-                                Nenhuma restrição cadastrada.
-                            </div>
-                        ) : (
-                            restricoes.map(r => (
-                                <div className="restricao-item" key={r.id}>
-                                    <label>
-                                        {r.nome.toUpperCase()}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        value={valoresRestricoes[r.id] || 0}
-                                        onChange={(e) =>
-                                            handleRestricaoChange(r.id, e.target.value)
-                                        }
-                                        disabled={enviando}
-                                        placeholder="0"
-                                    />
+                        <div className="restricoes-grid">
+                            {restricoes.length === 0 ? (
+                                <div className="no-restricoes">
+                                    Nenhuma restrição cadastrada.
                                 </div>
-                            ))
-                        )}
+                            ) : (
+                                restricoes.map(r => (
+                                    <div className="restricao-item" key={r.id}>
+                                        <label>
+                                            {r.nome}
+                                        </label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={valoresRestricoes[r.id] || 0}
+                                            onChange={(e) =>
+                                                handleRestricaoChange(r.id, e.target.value)
+                                            }
+                                            disabled={enviando}
+                                            placeholder="0"
+                                        />
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
 
                     {/* ================= TOTALIZADOR ================= */}
-                    <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: '10px 20px',
-                        backgroundColor: '#f8f9fa',
-                        borderRadius: '4px',
-                        marginTop: '10px'
-                    }}>
-                        <span style={{ fontWeight: 'bold' }}>
-                            Total de alunos:
-                        </span>
-                        <span style={{ fontWeight: 'bold', color: '#2c3e50' }}>
-                            {totalAlunos || 0}
-                        </span>
-                    </div>
-
-                    {Object.values(valoresRestricoes).reduce((a, b) => a + b, 0) > 0 && (
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            padding: '5px 20px',
-                            fontSize: '14px',
-                            color: '#ffffffff'
-                        }}>
-                            <span>
-                                Com restrições:
-                            </span>
-                            <span style={{ color: '#e74c3c' }}>
-                                {Object.values(valoresRestricoes).reduce((a, b) => a + b, 0)}
+                    <div className="totalizador">
+                        <div className="totalizador-item">
+                            <span className="totalizador-label">Total de alunos</span>
+                            <span className="totalizador-valor principal">
+                                {totalAlunosNum}
                             </span>
                         </div>
-                    )}
+
+                        {totalRestricoes > 0 && (
+                            <div className="totalizador-item">
+                                <span className="totalizador-label">Com restrições</span>
+                                <span className="totalizador-valor destaque">
+                                    {totalRestricoes}
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="totalizador-item">
+                            <span className="totalizador-label">Sem restrições</span>
+                            <span className="totalizador-valor secundario">
+                                {totalAlunosNum - totalRestricoes}
+                            </span>
+                        </div>
+                    </div>
 
                     {/* ================= BOTÃO DE ENVIO ================= */}
                     <button
-                        className="contador-btn"
+                        className={`contador-btn ${enviando ? 'loading' : ''}`}
                         onClick={enviarConfirmacao}
                         disabled={enviando || turmas.length === 0}
-                        style={{
-                            opacity: (enviando || turmas.length === 0) ? 0.7 : 1,
-                            cursor: (enviando || turmas.length === 0) ? 'not-allowed' : 'pointer'
-                        }}
                     >
-                        {enviando ? '⏳ ENVIANDO...' : 'ENVIAR'}
+                        {enviando ? '⏳ ENVIANDO...' : 'ENVIAR CONFIRMAÇÃO'}
                     </button>
 
                 </div>
@@ -499,7 +459,7 @@ function Contador() {
 
             {/* ================= FOOTER ================= */}
             <footer className="contador-footer">
-                Protótipo da página do contador feito pela equipe Try Catcher - Hackathon 2026
+                Protótipo da página do contador feito pela equipe <span>Try Catcher</span> - Hackathon 2026
             </footer>
         </div>
     );

@@ -1,3 +1,42 @@
+/* =========================
+   VARIÁVEIS DE COR (ROOT)
+========================= */
+:root {
+    /* Cores principais */
+    --cor-principal: #2E7D32;      /* Verde escuro */
+    --cor-secundaria: #1B5E20;     /* Verde mais escuro (substitui o azul) */
+    --cor-destaque: #FB8C00;       /* Laranja */
+    
+    /* Cores neutras */
+    --fundo: #FAFAFA;
+    --cards: #FFFFFF;
+    --bordas: #E0E0E0;
+    
+    /* Cores de texto */
+    --texto-principal: #263238;
+    --texto-secundario: #607D8B;
+    
+    /* Cores derivadas */
+    --cinza-claro: #E8ECF0;
+    --cinza-medio: #B0B8C0;
+    --cinza-escuro: #546E7A;
+    --branco: #FFFFFF;
+    --preto: #000000;
+    
+    /* Cores de estado */
+    --sucesso-fundo: #D4EDDA;
+    --sucesso-texto: #155724;
+    --sucesso-borda: #C3E6CB;
+    
+    --erro-fundo: #F8D7DA;
+    --erro-texto: #721C24;
+    --erro-borda: #F5C6CB;
+    
+    --info-fundo: #D1ECF1;
+    --info-texto: #0C5460;
+    --info-borda: #BEE5EB;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -13,8 +52,45 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #f0f4f8;
-    border: 8px solid #0b5ea8;
+    background: var(--fundo);
+    border: 8px solid var(--cor-secundaria);
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid var(--cinza-claro);
+    border-top: 4px solid var(--cor-secundaria);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--texto-principal);
+}
+
+.loading-subtext {
+    color: var(--texto-secundario);
 }
 
 /* =========================
@@ -26,32 +102,34 @@
     justify-content: space-between;
     align-items: center;
     padding: 18px 30px;
-    background: #ffffff;
-    color: #0b5ea8;
+    background: var(--cards);
+    color: var(--cor-secundaria);
     font-weight: bold;
     flex-wrap: wrap;
     gap: 10px;
+    border-bottom: 3px solid var(--cor-principal);
 }
 
 .cook-header h1 {
     font-size: 24px;
     letter-spacing: 0.5px;
+    color: var(--cor-secundaria);
 }
 
 .cook-header h2 {
     font-size: 18px;
     font-weight: 600;
-    color: #2c3e50;
-    background: #f0f4f8;
+    color: var(--texto-principal);
+    background: var(--cinza-claro);
     padding: 6px 16px;
     border-radius: 4px;
+    border-left: 3px solid var(--cor-destaque);
 }
 
-.cook-page hr {
-    height: 4px;
-    background: #0b5ea8;
-    border: none;
-    margin: 0;
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
 /* =========================
@@ -63,7 +141,7 @@
     gap: 20px;
     padding: 20px;
     flex: 1;
-    background: #f0f4f8;
+    background: var(--fundo);
 }
 
 /* =========================
@@ -78,21 +156,28 @@
 }
 
 .panel-title {
-    color: #0b5ea8;
+    color: var(--cor-secundaria);
     font-size: 18px;
     font-weight: bold;
     padding-bottom: 10px;
-    border-bottom: 2px solid #e0e4e8;
+    border-bottom: 2px solid var(--bordas);
 }
 
 /* CARD DE REFEIÇÃO */
 .meal-card {
-    background: #ffffff;
-    color: #2c3e50;
+    background: var(--cards);
+    color: var(--texto-principal);
     padding: 18px 20px;
     border-radius: 6px;
-    border: 1px solid #e0e4e8;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--bordas);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.meal-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(27, 94, 32, 0.1);
+    border-color: var(--cor-secundaria);
 }
 
 .meal-card .meal-header {
@@ -101,17 +186,17 @@
     align-items: center;
     margin-bottom: 10px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid var(--cinza-claro);
 }
 
 .meal-card .meal-header h3 {
     font-size: 16px;
-    color: #0b5ea8;
+    color: var(--cor-secundaria);
     font-weight: bold;
 }
 
 .meal-card .meal-header .badge {
-    background: #0b5ea8;
+    background: var(--cor-principal);
     color: white;
     padding: 2px 12px;
     border-radius: 12px;
@@ -127,25 +212,25 @@
 
 .meal-card .meal-info p {
     font-size: 14px;
-    color: #555;
+    color: var(--texto-secundario);
     padding: 2px 0;
 }
 
 .meal-card .meal-info strong {
-    color: #2c3e50;
+    color: var(--texto-principal);
 }
 
 /* CARD VAZIO */
 .empty-card {
-    background: #f8fafc;
-    color: #888;
-    border: 2px dashed #d0d4d8;
+    background: var(--cinza-claro);
+    color: var(--texto-secundario);
+    border: 2px dashed var(--bordas);
     text-align: center;
     padding: 30px 20px;
 }
 
 .empty-card h3 {
-    color: #666;
+    color: var(--texto-principal);
     font-size: 16px;
     margin-bottom: 5px;
 }
@@ -168,25 +253,28 @@
 
 /* BOTÃO INGREDIENTES */
 .ingredientes-button {
-    background: #ffffff;
-    border: 2px solid #0b5ea8;
-    color: #0b5ea8;
+    background: var(--cards);
+    border: 2px solid var(--cor-secundaria);
+    color: var(--cor-secundaria);
     font-weight: 600;
     padding: 12px;
     cursor: pointer;
     border-radius: 6px;
     font-size: 14px;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
 }
 
 .ingredientes-button:hover {
-    background: #f0f4f8;
+    background: var(--cor-secundaria);
+    color: var(--cards);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(27, 94, 32, 0.2);
 }
 
 /* BOX INGREDIENTES */
 .ingredientes-box {
-    background: #ffffff;
-    border: 1px solid #e0e4e8;
+    background: var(--cards);
+    border: 1px solid var(--bordas);
     border-radius: 6px;
     padding: 15px;
     max-height: 250px;
@@ -196,7 +284,7 @@
 .prato-box {
     margin-bottom: 12px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid var(--cinza-claro);
 }
 
 .prato-box:last-child {
@@ -206,7 +294,7 @@
 }
 
 .prato-box h3 {
-    color: #0b5ea8;
+    color: var(--cor-principal);
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 4px;
@@ -215,7 +303,7 @@
 .prato-box ul {
     margin-left: 20px;
     font-size: 13px;
-    color: #555;
+    color: var(--texto-secundario);
     list-style: none;
 }
 
@@ -229,11 +317,11 @@
     content: "•";
     position: absolute;
     left: 0;
-    color: #0b5ea8;
+    color: var(--cor-destaque);
 }
 
 .sem-pratos {
-    color: #999;
+    color: var(--cinza-medio);
     text-align: center;
     padding: 15px 0;
     font-size: 14px;
@@ -249,44 +337,52 @@
 
 .form-section .panel-title {
     padding-bottom: 10px;
-    border-bottom: 2px solid #e0e4e8;
+    border-bottom: 2px solid var(--bordas);
 }
 
 .form-box {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    background: #ffffff;
-    border: 1px solid #e0e4e8;
+    background: var(--cards);
+    border: 1px solid var(--bordas);
     border-radius: 6px;
     padding: 18px 20px;
+    border-top: 3px solid var(--cor-destaque);
 }
 
 .form-box label {
     font-size: 13px;
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--texto-principal);
     margin-top: 4px;
 }
 
 .form-box input {
     padding: 10px 12px;
-    border: 1px solid #d0d4d8;
+    border: 1px solid var(--bordas);
     border-radius: 4px;
     font-size: 14px;
     outline: none;
-    background: #fafbfc;
+    background: var(--fundo);
+    transition: all 0.3s ease;
 }
 
 .form-box input:focus {
-    outline: 2px solid #0b5ea8;
+    outline: 2px solid var(--cor-destaque);
     outline-offset: 2px;
-    background: white;
+    background: var(--cards);
+    border-color: var(--cor-destaque);
+}
+
+.form-box input:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .save-button {
     margin-top: 12px;
-    background: #0b5ea8;
+    background: var(--cor-secundaria);
     color: white;
     border: none;
     padding: 12px;
@@ -294,16 +390,23 @@
     font-weight: 600;
     font-size: 15px;
     border-radius: 6px;
-    transition: background-color 0.2s;
+    transition: all 0.3s ease;
 }
 
-.save-button:hover {
-    background: #0a4a8a;
+.save-button:hover:not(:disabled) {
+    background: var(--cor-principal);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
 }
 
 .save-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+}
+
+.save-button.loading {
+    background: var(--cinza-claro);
+    color: var(--cinza-escuro);
 }
 
 /* =========================
@@ -312,12 +415,12 @@
 
 .historico-section {
     padding: 20px 30px;
-    background: #ffffff;
-    border-top: 2px solid #e0e4e8;
+    background: var(--cards);
+    border-top: 3px solid var(--cor-secundaria);
 }
 
 .historico-section h2 {
-    color: #0b5ea8;
+    color: var(--cor-secundaria);
     margin-bottom: 15px;
     font-size: 20px;
 }
@@ -329,7 +432,7 @@
 }
 
 .historico-table thead th {
-    background: #0b5ea8;
+    background: var(--cor-secundaria);
     color: white;
     padding: 12px 15px;
     text-align: left;
@@ -338,23 +441,36 @@
 
 .historico-table tbody td {
     padding: 10px 15px;
-    border-bottom: 1px solid #eef2f7;
-    color: #444;
+    border-bottom: 1px solid var(--cinza-claro);
+    color: var(--texto-principal);
 }
 
 .historico-table tbody tr:hover td {
-    background: #f8fafc;
+    background: var(--cinza-claro);
 }
 
 .historico-table tbody tr:last-child td {
     border-bottom: none;
 }
 
+.historico-table tbody tr:nth-child(even) {
+    background: var(--fundo);
+}
+
+.historico-table tbody tr:nth-child(even):hover td {
+    background: var(--cinza-claro);
+}
+
 .empty-history {
-    color: #999;
+    color: var(--cinza-medio);
     text-align: center;
     padding: 20px 0;
     font-size: 15px;
+}
+
+.empty-subtext {
+    font-size: 14px;
+    color: var(--cinza-medio);
 }
 
 /* =========================
@@ -367,25 +483,29 @@
     text-align: center;
     font-weight: bold;
     font-size: 15px;
-    margin: 0 20px 10px 20px;
+    margin: 10px 20px 0 20px;
+    border-left: 4px solid transparent;
 }
 
 .mensagem.sucesso {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background: var(--sucesso-fundo);
+    color: var(--sucesso-texto);
+    border: 1px solid var(--sucesso-borda);
+    border-left-color: var(--cor-principal);
 }
 
 .mensagem.erro {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background: var(--erro-fundo);
+    color: var(--erro-texto);
+    border: 1px solid var(--erro-borda);
+    border-left-color: #DC3545;
 }
 
 .mensagem.info {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
+    background: var(--info-fundo);
+    color: var(--info-texto);
+    border: 1px solid var(--info-borda);
+    border-left-color: var(--cor-secundaria);
 }
 
 /* =========================
@@ -396,10 +516,15 @@
     text-align: center;
     padding: 18px;
     font-size: 13px;
-    color: #888;
-    background: white;
-    border-top: 2px solid #0b5ea8;
+    color: var(--cinza-medio);
+    background: var(--cards);
+    border-top: 3px solid var(--cor-principal);
     margin-top: auto;
+}
+
+.cook-footer span {
+    color: var(--cor-destaque);
+    font-weight: 600;
 }
 
 /* =========================
@@ -458,6 +583,11 @@
     .cook-header h2 {
         font-size: 14px;
         padding: 4px 12px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .cook-main {
@@ -526,9 +656,18 @@
     }
 
     .mensagem {
-        margin: 0 10px 8px 10px;
+        margin: 10px 10px 0 10px;
         font-size: 13px;
         padding: 10px 15px;
+    }
+
+    .loading-text {
+        font-size: 20px;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
     }
 }
 

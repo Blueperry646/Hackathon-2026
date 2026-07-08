@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './style.css';
-import logo from '../../Images/logo-caragua.png';
+import logo from '../../Images/TIAMARI.png';
 
 /**
  * Página de Login
@@ -184,10 +184,17 @@ function Login() {
                     <button 
                         type="submit" 
                         disabled={loading}
+                        className={loading ? 'loading' : ''}
                     >
-                        {loading ? 'ENTRANDO...' : 'ENVIAR'}
+                        {loading ? '⏳ ENTRANDO...' : 'ENVIAR'}
                     </button>
                 </form>
+
+                {/* ================= INDICADOR DE SEGURANÇA ================= */}
+                <div className="security-badge">
+                    <span className="security-dot"></span>
+                    Conexão segura
+                </div>
             </div>
 
             {/* ================= FOOTER ================= */}

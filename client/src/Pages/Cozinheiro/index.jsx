@@ -254,20 +254,20 @@ function Cozinheiro() {
     // FUNÇÃO: FORMATAR HORÁRIO
     // ===========================
 
-function formatarHorario(valor) {
-    if (!valor) return '--:--';
-    
-    // Se já for uma string curta de hora, retorna direto
-    if (typeof valor === 'string' && valor.length === 5) return valor;
+    function formatarHorario(valor) {
+        if (!valor) return '--:--';
+        
+        // Se já for uma string curta de hora, retorna direto
+        if (typeof valor === 'string' && valor.length === 5) return valor;
 
-    try {
-        const date = new Date(valor);
-        if (isNaN(date.getTime())) return valor;
-        return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
-    } catch {
-        return valor;
+        try {
+            const date = new Date(valor);
+            if (isNaN(date.getTime())) return valor;
+            return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' });
+        } catch {
+            return valor;
+        }
     }
-}
 
     // ===========================
     // RENDERIZAÇÃO: LOADING
@@ -276,19 +276,10 @@ function formatarHorario(valor) {
     if (loading) {
         return (
             <div className="cook-page">
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                    flexDirection: 'column'
-                }}>
-                    <div style={{ fontSize: '24px', marginBottom: '20px' }}>
-                        Carregando...
-                    </div>
-                    <div style={{ color: '#666' }}>
-                        Preparando os dados da cozinha
-                    </div>
+                <div className="loading-container">
+                    <div className="loading-spinner"></div>
+                    <div className="loading-text">Carregando...</div>
+                    <div className="loading-subtext">Preparando os dados da cozinha</div>
                 </div>
             </div>
         );
@@ -305,35 +296,15 @@ function formatarHorario(valor) {
                 <div className="header-left">
                     <h1>{escola === "" ? "ESCOLA MUNICIPAL" : escola}</h1>
                 </div>
-                <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div className="header-right">
                     <h2>{dataAtual}</h2>
-                    <LogoutButton /> {/* ← ADICIONAR */}
+                    <LogoutButton />
                 </div>
             </header>
 
             {/* ================= MENSAGENS DE FEEDBACK ================= */}
             {mensagem.texto && (
-                <div style={{
-                    padding: '12px 20px',
-                    margin: '10px auto',
-                    maxWidth: '1200px',
-                    borderRadius: '4px',
-                    textAlign: 'center',
-                    fontWeight: 'bold',
-                    backgroundColor:
-                        mensagem.tipo === 'sucesso' ? '#d4edda' :
-                            mensagem.tipo === 'erro' ? '#f8d7da' :
-                                mensagem.tipo === 'info' ? '#d1ecf1' : '#f8f9fa',
-                    color:
-                        mensagem.tipo === 'sucesso' ? '#155724' :
-                            mensagem.tipo === 'erro' ? '#721c24' :
-                                mensagem.tipo === 'info' ? '#0c5460' : '#383d41',
-                    border: '1px solid',
-                    borderColor:
-                        mensagem.tipo === 'sucesso' ? '#c3e6cb' :
-                            mensagem.tipo === 'erro' ? '#f5c6cb' :
-                                mensagem.tipo === 'info' ? '#bee5eb' : '#d6d8db'
-                }}>
+                <div className={`mensagem ${mensagem.tipo}`}>
                     {mensagem.texto}
                 </div>
             )}
@@ -355,10 +326,10 @@ function formatarHorario(valor) {
                             <div className="meal-card" key={refeicao.id}>
                                 <div className="meal-header">
                                     <h3>{formatarHorario(refeicao.horario)}</h3>
+                                    <span className="badge">{refeicao.porcoes} porções</span>
                                 </div>
                                 <div className="meal-info">
                                     <p><strong>Prato:</strong> {refeicao.prato}</p>
-                                    <p><strong>Porções:</strong> {refeicao.porcoes}</p>
                                     <p><strong>Especiais:</strong> {refeicao.especiais || 'Nenhum'}</p>
                                 </div>
                             </div>
@@ -395,7 +366,7 @@ function formatarHorario(valor) {
                                                     </li>
                                                 ))
                                             ) : (
-                                                <li style={{ color: '#999' }}>Sem ingredientes cadastrados</li>
+                                                <li style={{ color: 'var(--cinza-medio)' }}>Sem ingredientes cadastrados</li>
                                             )}
                                         </ul>
                                     </div>
@@ -443,13 +414,9 @@ function formatarHorario(valor) {
                             />
 
                             <button
-                                className="save-button"
+                                className={`save-button ${salvando ? 'loading' : ''}`}
                                 onClick={salvarRegistro}
                                 disabled={salvando}
-                                style={{
-                                    opacity: salvando ? 0.7 : 1,
-                                    cursor: salvando ? 'not-allowed' : 'pointer'
-                                }}
                             >
                                 {salvando ? '⏳ SALVANDO...' : 'SALVAR'}
                             </button>
@@ -469,7 +436,7 @@ function formatarHorario(valor) {
                     <p className="empty-history">
                         Nenhum registro realizado ainda.
                         <br />
-                        <span style={{ fontSize: '14px', color: '#999' }}>
+                        <span className="empty-subtext">
                             Comece registrando uma produção acima.
                         </span>
                     </p>
@@ -499,7 +466,7 @@ function formatarHorario(valor) {
 
             {/* ================= FOOTER ================= */}
             <footer className="cook-footer">
-                Protótipo da página do cozinheiro desenvolvido pela equipe Try Catcher - Hackathon 2026
+                Protótipo da página do cozinheiro desenvolvido pela equipe <span>Try Catcher</span> - Hackathon 2026
             </footer>
         </div>
     );
